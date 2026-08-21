@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --n8n-coral: #ff6d5a;
+    --n8n-coral-dark: #ea4b34;
+    --n8n-coral-light: #ff8a7a;
+    --n8n-coral-subtle: rgba(255, 109, 90, 0.12);
+    --n8n-bg-dark: #14171d;
+    --n8n-canvas-dark: #191d24;
+    --n8n-panel-dark: #1f242c;
+    --n8n-card-dark: #242a34;
+    --n8n-border-dark: #303744;
+  }
+}
+
+/* n8n canvas dot grid */
+.n8n-canvas-grid-dark {
+  background-color: #16191f;
+  background-image: radial-gradient(circle at 1.5px 1.5px, rgba(255, 255, 255, 0.1) 1.5px, transparent 0);
+  background-size: 24px 24px;
+}
+
+.n8n-canvas-grid-light {
+  background-color: #f7f8fa;
+  background-image: radial-gradient(circle at 1.5px 1.5px, rgba(0, 0, 0, 0.12) 1.5px, transparent 0);
+  background-size: 24px 24px;
+}
+
+/* Custom scrollbars like n8n */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(150, 150, 150, 0.25);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(150, 150, 150, 0.45);
+}
+
+/* Animated flow line dash */
+@keyframes n8nFlowDash {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+
+.n8n-flow-active {
+  animation: n8nFlowDash 0.8s linear infinite;
+}
+
+@keyframes n8nPulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(255, 109, 90, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(255, 109, 90, 0);
+  }
+}
+
+.n8n-executing-pulse {
+  animation: n8nPulseGlow 1.5s infinite;
+}
