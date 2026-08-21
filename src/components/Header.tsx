@@ -3,25 +3,23 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React from "react";
+import React, { useState } from "react";
 import {
   Sparkles,
   Download,
   FolderKanban,
   SlidersHorizontal,
-  RefreshCw,
   AlertTriangle,
-  Play,
   Moon,
   Sun,
-  Share2,
   CheckCircle2,
   Workflow,
-  Zap,
-  Activity,
-  Grid,
+  MoreHorizontal,
+  Pencil,
 } from "lucide-react";
 import { ProjectConfig, ValidationIssue } from "../types";
+import { Button } from "./ui/Button";
+import { cn } from "../lib/cn";
 
 interface HeaderProps {
   project: ProjectConfig;
@@ -32,12 +30,9 @@ interface HeaderProps {
   onOpenProjectModal: () => void;
   onOpenPresetsModal: () => void;
   onOpenExportModal: () => void;
-  onResetStack: () => void;
-  onGenerate: () => void;
+  onEditStack: () => void;
   darkMode: boolean;
   onToggleDarkMode: () => void;
-  isExecuting?: boolean;
-  onExecuteWorkflow?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -49,156 +44,110 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenProjectModal,
   onOpenPresetsModal,
   onOpenExportModal,
-  onResetStack,
-  onGenerate,
+  onEditStack,
   darkMode,
   onToggleDarkMode,
-  isExecuting = false,
-  onExecuteWorkflow,
 }) => {
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const errorCount = issues.filter((i) => i.severity === "error").length;
   const warningCount = issues.filter((i) => i.severity === "warning").length;
+
+  const statusTone: "danger" | "warning" | "success" = errorCount > 0 ? "danger" : warningCount > 0 ? "warning" : "success";
+  const statusCount = errorCount > 0 ? errorCount : warningCount > 0 ? warningCount : 0;
 
   return (
     <header
       id="app-header"
-      className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-[#2c323f] bg-[#1a1e26] px-4 text-white shadow-md dark:border-[#2c323f] dark:bg-[#1a1e26] sm:px-5"
+      className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-[var(--border-subtle)] bg-[var(--surface-1)] px-3 text-[var(--text-primary)] sm:px-5"
     >
-      {/* Brand & Project Info (n8n Style) */}
-      <div className="flex items-center gap-3">
-        {/* n8n Style Coral Emblem */}
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#ff6d5a] to-[#ea4b34] text-white shadow-lg shadow-[#ff6d5a]/25">
-          <Workflow className="h-5 w-5" />
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-gradient-to-br from-accent-400 to-accent-600 text-[var(--text-on-accent)] shadow-[var(--elevation-2)]">
+          <Workflow className="h-[18px] w-[18px]" />
         </div>
 
-        <div className="flex items-center gap-2.5">
-          <div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={onOpenProjectModal}
-                className="group flex items-center gap-1.5 font-bold tracking-tight text-white hover:text-[#ff6d5a] transition"
-              >
-                <span className="text-sm font-bold sm:text-base">
-                  {project.name || "My Architecture Workflow"}
-                </span>
-                <SlidersHorizontal className="h-3 w-3 text-neutral-400 opacity-60 group-hover:opacity-100 group-hover:text-[#ff6d5a]" />
-              </button>
-
-              <span className="hidden rounded-md bg-[#252b37] px-2 py-0.5 text-[10px] font-semibold text-[#ff8a7a] border border-[#363e4f] sm:inline-block">
-                n8n Flow v2.5
-              </span>
-            </div>
-
-            <div className="flex items-center gap-2 text-[11px] text-neutral-400">
-              <span className="capitalize">{project.type.replace("_", " ")}</span>
-              <span>•</span>
-              <span>{selectedCount} Nodes</span>
-            </div>
-          </div>
-
-          {/* n8n Active Workflow Status Pill */}
-          <div className="hidden lg:flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-950/40 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-400 shadow-xs">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
-            </span>
-            <span>Active Flow</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Center Actions / n8n Signature Execute Button */}
-      <div className="flex items-center gap-2">
-        {onExecuteWorkflow && (
+        <div className="min-w-0">
           <button
-            id="btn-execute-workflow"
-            onClick={onExecuteWorkflow}
-            disabled={isExecuting || selectedCount === 0}
-            className={`flex items-center gap-2 rounded-xl px-4 py-1.5 text-xs font-bold text-white shadow-md shadow-[#ff6d5a]/25 transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${
-              isExecuting
-                ? "bg-[#28303d] border border-[#ff6d5a] text-[#ff8a7a]"
-                : "bg-gradient-to-r from-[#ff6d5a] to-[#ea4b34] hover:from-[#ff5540] hover:to-[#d83f2a]"
-            }`}
-            title="Execute simulation of requests flowing through your architecture"
+            onClick={onOpenProjectModal}
+            className="group flex min-w-0 items-center gap-1.5 font-display font-semibold tracking-tight text-[var(--text-primary)] transition hover:text-accent-400"
           >
-            {isExecuting ? (
-              <>
-                <RefreshCw className="h-3.5 w-3.5 animate-spin text-[#ff6d5a]" />
-                <span className="hidden sm:inline">Executing Flow...</span>
-              </>
-            ) : (
-              <>
-                <Play className="h-3.5 w-3.5 fill-current" />
-                <span className="hidden sm:inline">Test Architecture Flow</span>
-                <span className="sm:hidden">Test</span>
-              </>
-            )}
+            <span className="truncate text-sm font-semibold sm:text-base">{project.name || "My Architecture"}</span>
+            <SlidersHorizontal className="h-3 w-3 shrink-0 text-[var(--text-tertiary)] opacity-60 group-hover:opacity-100 group-hover:text-accent-400" />
           </button>
-        )}
-
-        <button
-          id="btn-presets"
-          onClick={onOpenPresetsModal}
-          className="hidden md:flex items-center gap-1.5 rounded-xl border border-[#303744] bg-[#222732] px-3 py-1.5 text-xs font-medium text-neutral-200 transition hover:bg-[#2a313e] hover:border-[#3e4758]"
-        >
-          <FolderKanban className="h-3.5 w-3.5 text-[#ff8a7a]" />
-          <span>Blueprints</span>
-        </button>
-
-        {/* Validation Status Indicator */}
-        <div className="hidden xl:flex items-center gap-2 rounded-xl border border-[#303744] bg-[#1e232d] px-3 py-1.5 text-xs font-medium text-neutral-300">
-          {errorCount > 0 ? (
-            <span className="flex items-center gap-1 font-bold text-rose-400">
-              <AlertTriangle className="h-3.5 w-3.5" />
-              {errorCount} {errorCount === 1 ? "Error" : "Errors"}
-            </span>
-          ) : warningCount > 0 ? (
-            <span className="flex items-center gap-1 font-bold text-amber-400">
-              <AlertTriangle className="h-3.5 w-3.5" />
-              {warningCount} Warnings
-            </span>
-          ) : (
-            <span className="flex items-center gap-1 font-semibold text-emerald-400">
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              Stack Valid
-            </span>
-          )}
+          <div className="flex items-center gap-1.5 text-[11px] text-[var(--text-tertiary)]">
+            <span className="capitalize">{project.type.replace("_", " ")}</span>
+            <span>·</span>
+            <span>{selectedCount} components</span>
+          </div>
         </div>
       </div>
 
-      {/* Right Tools */}
-      <div className="flex items-center gap-2">
-        <button
-          id="btn-ai-copilot"
-          onClick={onToggleAiDrawer}
-          className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold shadow-xs transition ${
-            isAiDrawerOpen
-              ? "bg-[#ff6d5a] text-white shadow-[#ff6d5a]/30"
-              : "border border-[#ff6d5a]/40 bg-[#ff6d5a]/10 text-[#ff8a7a] hover:bg-[#ff6d5a]/20"
-          }`}
+      <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+        <Button variant="secondary" size="sm" onClick={onEditStack} title="Reopen the guided stack builder">
+          <Pencil className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">Edit Stack</span>
+        </Button>
+
+        <div
+          className={cn(
+            "hidden items-center gap-1.5 rounded-[var(--radius-md)] border px-2.5 py-1.5 text-xs font-medium sm:flex",
+            statusTone === "danger" && "border-danger-500/30 bg-danger-500/10 text-danger-400",
+            statusTone === "warning" && "border-warning-500/30 bg-warning-500/10 text-warning-400",
+            statusTone === "success" && "border-success-500/30 bg-success-500/10 text-success-400"
+          )}
         >
+          {statusTone === "success" ? <CheckCircle2 className="h-3.5 w-3.5" /> : <AlertTriangle className="h-3.5 w-3.5" />}
+          <span className="hidden lg:inline">
+            {statusTone === "success" ? "Stack Valid" : `${statusCount} ${statusTone === "danger" ? "Errors" : "Warnings"}`}
+          </span>
+          {statusTone !== "success" && <span className="lg:hidden">{statusCount}</span>}
+        </div>
+
+        <Button id="btn-ai-copilot" variant={isAiDrawerOpen ? "primary" : "secondary"} size="sm" onClick={onToggleAiDrawer}>
           <Sparkles className="h-3.5 w-3.5" />
           <span className="hidden sm:inline">AI Copilot</span>
-        </button>
+        </Button>
 
-        <button
-          id="btn-export-diagram"
-          onClick={onOpenExportModal}
-          className="flex items-center gap-1.5 rounded-xl border border-[#303744] bg-[#222732] px-3 py-1.5 text-xs font-medium text-neutral-200 transition hover:bg-[#2a313e] hover:border-[#3e4758]"
-          title="Export Diagram & ADR"
-        >
-          <Download className="h-3.5 w-3.5 text-neutral-400" />
-          <span className="hidden sm:inline">Export</span>
-        </button>
+        <Button variant="secondary" size="sm" onClick={onOpenPresetsModal} className="hidden md:inline-flex">
+          <FolderKanban className="h-3.5 w-3.5 text-accent-400" />
+          <span>Templates</span>
+        </Button>
 
-        <button
-          id="btn-toggle-dark-mode"
-          onClick={onToggleDarkMode}
-          className="rounded-xl border border-[#303744] bg-[#222732] p-2 text-neutral-400 hover:text-white hover:bg-[#2a313e]"
-          title={darkMode ? "Switch to Light Canvas" : "Switch to Dark Canvas"}
-        >
-          {darkMode ? <Sun className="h-3.5 w-3.5 text-amber-400" /> : <Moon className="h-3.5 w-3.5" />}
-        </button>
+        <Button variant="secondary" size="sm" onClick={onOpenExportModal} title="Export Diagram & ADR" className="hidden md:inline-flex">
+          <Download className="h-3.5 w-3.5" />
+          <span>Export</span>
+        </Button>
+
+        <Button variant="secondary" size="icon" onClick={onToggleDarkMode} title={darkMode ? "Switch to light theme" : "Switch to dark theme"}>
+          {darkMode ? <Sun className="h-3.5 w-3.5 text-warning-400" /> : <Moon className="h-3.5 w-3.5" />}
+        </Button>
+
+        <div className="relative md:hidden">
+          <Button variant="secondary" size="icon" onClick={() => setIsMoreMenuOpen((v) => !v)}>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+
+          {isMoreMenuOpen && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setIsMoreMenuOpen(false)} />
+              <div className="absolute right-0 top-11 z-50 w-48 overflow-hidden rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-2)] py-1 shadow-[var(--elevation-3)]">
+                <button
+                  onClick={() => { onOpenPresetsModal(); setIsMoreMenuOpen(false); }}
+                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-[var(--text-primary)] hover:bg-[var(--surface-3)]"
+                >
+                  <FolderKanban className="h-3.5 w-3.5 text-accent-400" />
+                  <span>Templates</span>
+                </button>
+                <button
+                  onClick={() => { onOpenExportModal(); setIsMoreMenuOpen(false); }}
+                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-[var(--text-primary)] hover:bg-[var(--surface-3)]"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  <span>Export</span>
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </header>
   );

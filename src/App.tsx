@@ -5,7 +5,6 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Header } from "./components/Header";
-import { NaturalLanguagePromptBar } from "./components/NaturalLanguagePromptBar";
 import { StackPicker } from "./components/StackPicker";
 import { DiagramCanvas } from "./components/DiagramCanvas";
 import { ComponentInspector } from "./components/ComponentInspector";
@@ -14,23 +13,20 @@ import { AICopilotDrawer } from "./components/AICopilotDrawer";
 import { ProjectConfigModal } from "./components/ProjectConfigModal";
 import { PresetsModal } from "./components/PresetsModal";
 import { ExportModal } from "./components/ExportModal";
+import { StackWizard } from "./components/wizard/StackWizard";
 
-import {
-  ProjectConfig,
-  Technology,
-  ViewLevel,
-  ValidationIssue,
-  StackPreset,
-  NodeExecutionResult,
-} from "./types";
-import { TECH_BY_ID, TECH_CATALOG } from "./engine/catalog";
+import { ProjectConfig, Technology, ValidationIssue, StackPreset } from "./types";
+import { TECH_BY_ID } from "./engine/catalog";
 import { generateArchitectureModel } from "./engine/architectureEngine";
 import { validateArchitecture } from "./engine/validator";
 import { askAISuggestStack } from "./services/aiService";
-import { ChevronLeft, ChevronRight, Layers, SlidersHorizontal } from "lucide-react";
+import { Layers, SlidersHorizontal, Sparkles } from "lucide-react";
+import { Sheet } from "./components/ui/Sheet";
+import { useMediaQuery } from "./lib/useMediaQuery";
+
+type AppPhase = "wizard" | "diagram";
 
 export default function App() {
-  // Dark mode state
   const [darkMode, setDarkMode] = useState(true);
 
   useEffect(() => {
@@ -41,96 +37,48 @@ export default function App() {
     }
   }, [darkMode]);
 
-  // Project configuration
+  const [appPhase, setAppPhase] = useState<AppPhase>("wizard");
+
   const [project, setProject] = useState<ProjectConfig>({
-    name: "Modern AI SaaS Platform",
-    type: "ai_app",
-    description:
-      "Enterprise AI SaaS with RAG embeddings, multi-tenant authentication, and subscription billing.",
-    expectedTraffic: "high",
-    budgetConstraint: "balanced",
+    id: "local",
+    name: "My Architecture",
+    type: "saas",
+    description: "",
+    expectedTraffic: "medium",
+    teamExperience: "intermediate",
+    budgetConstraint: "moderate",
   });
 
-  // Selected technology IDs (starting default stack)
-  const [selectedTechIds, setSelectedTechIds] = useState<string[]>([
-    "nextjs",
-    "fastapi",
-    "postgresql",
-    "redis",
-    "clerk",
-    "stripe",
-    "gemini",
-    "pinecone",
-    "s3",
-    "vercel",
-    "gcp_cloudrun",
-    "sentry",
-    "github_actions",
-  ]);
-
-  // View level & Selected node
-  const [viewLevel, setViewLevel] = useState<ViewLevel>("system");
+  const [selectedTechIds, setSelectedTechIds] = useState<string[]>([]);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
-  // Workflow Execution / Testing Simulation state (n8n style)
-  const [isExecutingWorkflow, setIsExecutingWorkflow] = useState(false);
-  const [executingNodeId, setExecutingNodeId] = useState<string | null>(null);
-  const [executionResults, setExecutionResults] = useState<Record<string, NodeExecutionResult>>({});
-
-  // Layout UI states
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isAiDrawerOpen, setIsAiDrawerOpen] = useState(false);
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [isPresetsModalOpen, setIsPresetsModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
 
-  // Node position overrides for user manual dragging
-  const [customNodePositions, setCustomNodePositions] = useState<Record<string, { x: number; y: number }>>({});
+  // Below `lg` (1024px), side panels become full-screen overlay sheets.
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isMobileStackSheetOpen, setIsMobileStackSheetOpen] = useState(false);
 
-  // Resolve selected Technology objects
   const selectedTechs = useMemo(() => {
-    return selectedTechIds
-      .map((id) => TECH_BY_ID.get(id))
-      .filter((t): t is Technology => Boolean(t));
+    return selectedTechIds.map((id) => TECH_BY_ID.get(id)).filter((t): t is Technology => Boolean(t));
   }, [selectedTechIds]);
 
-  // Generate Architecture Model from Engine
-  const baseModel = useMemo(() => {
-    return generateArchitectureModel(project, selectedTechs, viewLevel);
-  }, [project, selectedTechs, viewLevel]);
-
-  // Apply custom positions if any
   const model = useMemo(() => {
-    if (Object.keys(customNodePositions).length === 0) return baseModel;
-    const updatedNodes = baseModel.nodes.map((node) => {
-      const custom = customNodePositions[node.id];
-      if (custom) {
-        return { ...node, x: custom.x, y: custom.y };
-      }
-      return node;
-    });
-    return { ...baseModel, nodes: updatedNodes };
-  }, [baseModel, customNodePositions]);
+    return generateArchitectureModel(project, selectedTechs, "system");
+  }, [project, selectedTechs]);
 
-  // Real-time Architecture Validation issues
   const validationIssues = useMemo(() => {
     return validateArchitecture(project, selectedTechs);
   }, [project, selectedTechs]);
 
-  // Handlers for technology selection
   const handleToggleTech = useCallback((techId: string) => {
-    setSelectedTechIds((prev) => {
-      if (prev.includes(techId)) {
-        return prev.filter((id) => id !== techId);
-      } else {
-        return [...prev, techId];
-      }
-    });
-  }, []);
-
-  const handleSelectOnly = useCallback((techId: string) => {
-    setSelectedTechIds([techId]);
+    setSelectedTechIds((prev) =>
+      prev.includes(techId) ? prev.filter((id) => id !== techId) : [...prev, techId]
+    );
   }, []);
 
   const handleClearCategory = useCallback((category: string) => {
@@ -142,156 +90,22 @@ export default function App() {
     );
   }, []);
 
-  const handleResetStack = useCallback(() => {
-    setSelectedTechIds([]);
-    setCustomNodePositions({});
-    setSelectedNodeId(null);
-    setExecutionResults({});
-    setExecutingNodeId(null);
-    setIsExecutingWorkflow(false);
-  }, []);
-
-  const handleNodePositionChange = useCallback((nodeId: string, x: number, y: number) => {
-    setCustomNodePositions((prev) => ({
-      ...prev,
-      [nodeId]: { x, y },
-    }));
-  }, []);
-
-  const handleAutoLayout = useCallback(() => {
-    setCustomNodePositions({});
-  }, []);
-
-  // 1-Click Auto-Fix Handler
   const handleAutoFix = useCallback((action: NonNullable<ValidationIssue["autoFixAction"]>) => {
     if (action.type === "add_tech" && action.techId) {
-      setSelectedTechIds((prev) => {
-        if (!prev.includes(action.techId!)) {
-          return [...prev, action.techId!];
-        }
-        return prev;
-      });
+      setSelectedTechIds((prev) => (prev.includes(action.techId!) ? prev : [...prev, action.techId!]));
     } else if (action.type === "remove_tech" && action.techId) {
       setSelectedTechIds((prev) => prev.filter((id) => id !== action.techId));
     }
   }, []);
 
-  // Apply Blueprint Preset
   const handleApplyPreset = useCallback((preset: StackPreset) => {
-    setProject((prev) => ({
-      ...prev,
-      name: preset.name,
-      type: preset.projectType,
-      description: preset.description,
-    }));
+    setProject((prev) => ({ ...prev, name: preset.name, type: preset.projectType, description: preset.description }));
     setSelectedTechIds(preset.techIds);
-    setCustomNodePositions({});
     setSelectedNodeId(null);
-    setExecutionResults({});
+    setAppPhase("diagram");
   }, []);
 
-  // Single Node Test Handler (e.g. from Inspector)
-  const handleExecuteSingleNode = useCallback((nodeId: string) => {
-    setExecutingNodeId(nodeId);
-    setExecutionResults((prev) => ({
-      ...prev,
-      [nodeId]: {
-        status: "running",
-        startedAt: Date.now(),
-      },
-    }));
-
-    setTimeout(() => {
-      const node = model.nodes.find((n) => n.id === nodeId);
-      const isIssue = validationIssues.some((issue) => issue.techIds.includes(node?.techId || ""));
-      const executionTime = Math.floor(Math.random() * 45 + 12);
-
-      setExecutionResults((prev) => ({
-        ...prev,
-        [nodeId]: {
-          status: isIssue ? "warning" : "success",
-          executionTimeMs: executionTime,
-          startedAt: Date.now() - executionTime,
-          outputData: {
-            nodeId,
-            tech: node?.label || "Node",
-            status: isIssue ? "warning" : "active",
-            latencyMs: executionTime,
-            health: "healthy",
-            timestamp: new Date().toISOString(),
-          },
-        },
-      }));
-      setExecutingNodeId(null);
-    }, 600);
-  }, [model.nodes, validationIssues]);
-
-  // Full Workflow Simulation Execution Handler (n8n test run)
-  const handleExecuteWorkflow = useCallback(async () => {
-    if (isExecutingWorkflow || model.nodes.length === 0) return;
-
-    setIsExecutingWorkflow(true);
-    setExecutionResults({});
-
-    // Sort nodes topologically or by zone/layer
-    const zoneOrder: Record<string, number> = {
-      client: 0,
-      edge: 1,
-      core: 2,
-      data: 3,
-      cloud: 4,
-      security: 5,
-    };
-
-    const sortedNodes = [...model.nodes].sort((a, b) => {
-      const orderA = zoneOrder[a.zone] ?? 2;
-      const orderB = zoneOrder[b.zone] ?? 2;
-      return orderA - orderB || a.x - b.x;
-    });
-
-    for (let i = 0; i < sortedNodes.length; i++) {
-      const node = sortedNodes[i];
-      setExecutingNodeId(node.id);
-      
-      setExecutionResults((prev) => ({
-        ...prev,
-        [node.id]: {
-          status: "running",
-          startedAt: Date.now(),
-        },
-      }));
-
-      // Realistic step delay
-      await new Promise((resolve) => setTimeout(resolve, 380));
-
-      const isIssue = validationIssues.some((issue) => issue.techIds.includes(node.techId || ""));
-      const executionTime = Math.floor(Math.random() * 35 + 8);
-
-      setExecutionResults((prev) => ({
-        ...prev,
-        [node.id]: {
-          status: isIssue ? "warning" : "success",
-          executionTimeMs: executionTime,
-          startedAt: Date.now() - executionTime,
-          outputData: {
-            nodeId: node.id,
-            label: node.label,
-            category: node.category,
-            zone: node.zone,
-            status: isIssue ? "warning" : "healthy",
-            latencyMs: executionTime,
-            timestamp: new Date().toISOString(),
-          },
-        },
-      }));
-    }
-
-    setExecutingNodeId(null);
-    setIsExecutingWorkflow(false);
-  }, [isExecutingWorkflow, model.nodes, validationIssues]);
-
-  // AI Natural Language Generator
-  const handleAIGenerateFromPrompt = async (promptText: string) => {
+  const handleAIGenerateFromPrompt = useCallback(async (promptText: string) => {
     setIsGeneratingAI(true);
     try {
       const result = await askAISuggestStack(promptText, selectedTechIds);
@@ -303,20 +117,53 @@ export default function App() {
           type: result.projectType || prev.type,
           description: result.description || prev.description,
         }));
-        setCustomNodePositions({});
         setSelectedNodeId(null);
-        setExecutionResults({});
       }
     } catch (err: any) {
       console.error("AI Stack generation error:", err);
     } finally {
       setIsGeneratingAI(false);
     }
-  };
+  }, [selectedTechIds]);
+
+  const handleWizardComplete = useCallback(() => {
+    setAppPhase("diagram");
+    setSelectedNodeId(null);
+  }, []);
+
+  const handleEditStack = useCallback(() => {
+    setAppPhase("wizard");
+    setSelectedNodeId(null);
+  }, []);
+
+  if (appPhase === "wizard") {
+    return (
+      <>
+        <StackWizard
+          project={project}
+          onChangeProject={setProject}
+          selectedTechIds={selectedTechIds}
+          onToggleTech={handleToggleTech}
+          onComplete={handleWizardComplete}
+          darkMode={darkMode}
+          onToggleDarkMode={() => setDarkMode(!darkMode)}
+          onOpenTemplates={() => setIsPresetsModalOpen(true)}
+          isGeneratingAI={isGeneratingAI}
+          onAIQuickStart={handleAIGenerateFromPrompt}
+          hasExistingStack={selectedTechIds.length > 0}
+          onCancel={() => setAppPhase("diagram")}
+        />
+        <PresetsModal
+          isOpen={isPresetsModalOpen}
+          onClose={() => setIsPresetsModalOpen(false)}
+          onApplyPreset={handleApplyPreset}
+        />
+      </>
+    );
+  }
 
   return (
-    <div className="flex h-screen w-screen flex-col overflow-hidden bg-neutral-100 font-sans text-neutral-900 antialiased dark:bg-[#13161c] dark:text-neutral-100">
-      {/* Top Application Header */}
+    <div className="flex h-screen w-screen flex-col overflow-hidden bg-[var(--surface-0)] font-sans text-[var(--text-primary)] antialiased">
       <Header
         project={project}
         selectedCount={selectedTechIds.length}
@@ -326,72 +173,57 @@ export default function App() {
         onOpenProjectModal={() => setIsProjectModalOpen(true)}
         onOpenPresetsModal={() => setIsPresetsModalOpen(true)}
         onOpenExportModal={() => setIsExportModalOpen(true)}
-        onResetStack={handleResetStack}
-        onGenerate={() => setCustomNodePositions({})}
+        onEditStack={handleEditStack}
         darkMode={darkMode}
         onToggleDarkMode={() => setDarkMode(!darkMode)}
-        isExecuting={isExecutingWorkflow}
-        onExecuteWorkflow={handleExecuteWorkflow}
       />
 
-      {/* Natural Language Prompt & Matcher Bar */}
-      <NaturalLanguagePromptBar
-        onGenerateFromPrompt={handleAIGenerateFromPrompt}
-        isLoading={isGeneratingAI}
-      />
-
-      {/* Main Workspace Layout */}
       <div className="relative flex flex-1 overflow-hidden">
-        {/* Left Side: Technology Stack Picker */}
+        {/* Left: add / remove components — docked on desktop */}
         <div
-          className={`relative z-10 flex flex-col transition-all duration-300 ${
-            isSidebarOpen ? "w-80 md:w-96" : "w-0 overflow-hidden"
+          className={`relative z-10 hidden flex-col transition-all duration-300 lg:flex ${
+            isSidebarOpen ? "lg:w-80 xl:w-96" : "lg:w-0 lg:overflow-hidden"
           }`}
         >
           <StackPicker
             selectedTechIds={selectedTechIds}
             onToggleTech={handleToggleTech}
-            onSelectOnly={handleSelectOnly}
             onClearCategory={handleClearCategory}
-            onGenerate={() => setCustomNodePositions({})}
-            isGenerating={isGeneratingAI}
           />
         </div>
 
-        {/* Sidebar Toggle Button */}
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className={`absolute left-0 top-1/2 z-20 -translate-y-1/2 rounded-r-lg border border-l-0 border-[#2c323f] bg-[#1d222b] p-1.5 text-neutral-400 shadow-xl transition hover:bg-[#28303e] hover:text-white ${
-            isSidebarOpen ? "left-80 md:left-96" : "left-0"
+          className={`absolute top-1/2 z-20 hidden -translate-y-1/2 rounded-r-[var(--radius-md)] border border-l-0 border-[var(--border-default)] bg-[var(--surface-2)] p-1.5 text-[var(--text-tertiary)] shadow-[var(--elevation-2)] transition hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] lg:block ${
+            isSidebarOpen ? "lg:left-80 xl:left-96" : "left-0"
           }`}
-          title={isSidebarOpen ? "Collapse Stack Picker" : "Open Stack Picker"}
+          title={isSidebarOpen ? "Collapse panel" : "Add components"}
         >
-          {isSidebarOpen ? <ChevronLeft className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+          <Layers className="h-3.5 w-3.5" />
         </button>
 
-        {/* Center: Interactive Diagram Canvas & Diagnostics */}
+        {!isDesktop && (
+          <Sheet isOpen={isMobileStackSheetOpen} onClose={() => setIsMobileStackSheetOpen(false)} side="left">
+            <StackPicker
+              selectedTechIds={selectedTechIds}
+              onToggleTech={handleToggleTech}
+              onClearCategory={handleClearCategory}
+              onRequestClose={() => setIsMobileStackSheetOpen(false)}
+            />
+          </Sheet>
+        )}
+
         <div className="flex flex-1 flex-col overflow-hidden">
           <DiagramCanvas
             model={model}
-            viewLevel={viewLevel}
-            onChangeViewLevel={setViewLevel}
             selectedNodeId={selectedNodeId}
             onSelectNode={setSelectedNodeId}
-            onNodePositionChange={handleNodePositionChange}
-            onAutoLayout={handleAutoLayout}
-            executionResults={executionResults}
-            executingNodeId={executingNodeId}
           />
 
-          {/* Architecture Audit & Diagnostics Bottom Bar */}
-          <ValidationPanel
-            issues={validationIssues}
-            onAutoFix={handleAutoFix}
-          />
+          <ValidationPanel issues={validationIssues} onAutoFix={handleAutoFix} />
         </div>
 
-        {/* Right Side: Component Inspector (when node is clicked) */}
-        {selectedNodeId && (
+        {isDesktop && selectedNodeId && (
           <ComponentInspector
             nodeId={selectedNodeId}
             model={model}
@@ -401,27 +233,68 @@ export default function App() {
               setSelectedNodeId(null);
             }}
             onSelectNode={setSelectedNodeId}
-            executionResult={executionResults[selectedNodeId]}
-            onTestNode={handleExecuteSingleNode}
           />
         )}
 
-        {/* AI Copilot Drawer */}
+        {!isDesktop && (
+          <Sheet isOpen={Boolean(selectedNodeId)} onClose={() => setSelectedNodeId(null)} side="right">
+            {selectedNodeId && (
+              <ComponentInspector
+                nodeId={selectedNodeId}
+                model={model}
+                onClose={() => setSelectedNodeId(null)}
+                onRemoveTech={(techId) => {
+                  handleToggleTech(techId);
+                  setSelectedNodeId(null);
+                }}
+                onSelectNode={setSelectedNodeId}
+              />
+            )}
+          </Sheet>
+        )}
+
         <AICopilotDrawer
           isOpen={isAiDrawerOpen}
           onClose={() => setIsAiDrawerOpen(false)}
           project={project}
           selectedTechs={selectedTechs}
           issues={validationIssues}
-          onAddTech={(techId) => {
-            if (!selectedTechIds.includes(techId)) {
-              setSelectedTechIds((prev) => [...prev, techId]);
-            }
-          }}
         />
       </div>
 
-      {/* Modals */}
+      <div className="flex items-stretch border-t border-[var(--border-subtle)] bg-[var(--surface-1)] pb-[env(safe-area-inset-bottom)] lg:hidden">
+        <button
+          onClick={() => setIsMobileStackSheetOpen(true)}
+          className={`flex flex-1 flex-col items-center gap-0.5 py-2 text-[10px] font-medium transition ${
+            isMobileStackSheetOpen ? "text-accent-500" : "text-[var(--text-tertiary)]"
+          }`}
+        >
+          <Layers className="h-[18px] w-[18px]" />
+          <span>Stack ({selectedTechIds.length})</span>
+        </button>
+
+        <button
+          onClick={() => setSelectedNodeId((prev) => (prev ? null : prev))}
+          disabled={!selectedNodeId}
+          className={`flex flex-1 flex-col items-center gap-0.5 py-2 text-[10px] font-medium transition disabled:opacity-40 ${
+            selectedNodeId ? "text-accent-500" : "text-[var(--text-tertiary)]"
+          }`}
+        >
+          <SlidersHorizontal className="h-[18px] w-[18px]" />
+          <span>Inspector</span>
+        </button>
+
+        <button
+          onClick={() => setIsAiDrawerOpen(!isAiDrawerOpen)}
+          className={`flex flex-1 flex-col items-center gap-0.5 py-2 text-[10px] font-medium transition ${
+            isAiDrawerOpen ? "text-accent-500" : "text-[var(--text-tertiary)]"
+          }`}
+        >
+          <Sparkles className="h-[18px] w-[18px]" />
+          <span>Copilot</span>
+        </button>
+      </div>
+
       <ProjectConfigModal
         isOpen={isProjectModalOpen}
         onClose={() => setIsProjectModalOpen(false)}
@@ -439,7 +312,6 @@ export default function App() {
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}
         model={model}
-        viewLevel={viewLevel}
       />
     </div>
   );

@@ -6,18 +6,15 @@
 import React, { useState } from "react";
 import {
   Sparkles,
-  X,
   Send,
   Loader2,
   CheckCircle2,
   AlertTriangle,
   ShieldCheck,
   DollarSign,
-  ArrowRight,
   RefreshCw,
   Bot,
   User,
-  Plus,
 } from "lucide-react";
 import {
   ProjectConfig,
@@ -27,6 +24,9 @@ import {
   AICopilotMessage,
 } from "../types";
 import { askAIReviewArchitecture, askAICopilot } from "../services/aiService";
+import { Sheet, SheetCloseButton } from "./ui/Sheet";
+import { Tabs } from "./ui/Tabs";
+import { Button } from "./ui/Button";
 
 interface AICopilotDrawerProps {
   isOpen: boolean;
@@ -34,7 +34,6 @@ interface AICopilotDrawerProps {
   project: ProjectConfig;
   selectedTechs: Technology[];
   issues: ValidationIssue[];
-  onAddTech: (techId: string) => void;
 }
 
 export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
@@ -43,21 +42,19 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
   project,
   selectedTechs,
   issues,
-  onAddTech,
 }) => {
   const [activeTab, setActiveTab] = useState<"review" | "chat">("review");
   const [reviewResult, setReviewResult] = useState<AIReviewResult | null>(null);
   const [isLoadingReview, setIsLoadingReview] = useState(false);
   const [reviewError, setReviewError] = useState<string | null>(null);
 
-  // Chat state
   const [messages, setMessages] = useState<AICopilotMessage[]>([
     {
       id: "welcome",
       sender: "copilot",
       timestamp: "Just now",
       content:
-        "Hello! I am your Architecture Copilot. Ask me anything about workflow wiring, throughput bottlenecks, security boundaries, or scaling strategies for your active stack.",
+        "Hello! I am your Architecture Copilot. Ask me anything about component wiring, throughput bottlenecks, security boundaries, or scaling strategies for your active stack.",
     },
   ]);
   const [questionInput, setQuestionInput] = useState("");
@@ -114,105 +111,75 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div
-      id="ai-copilot-drawer"
-      className="fixed inset-y-0 right-0 z-50 flex w-full max-w-lg flex-col border-l border-[#2c323f] bg-[#181c24] text-neutral-200 shadow-2xl transition-all"
-    >
+    <Sheet isOpen={isOpen} onClose={onClose} side="right" zIndex={50} widthClassName="sm:max-w-lg lg:max-w-lg">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-[#2c323f] bg-[#1d222c] p-4">
+      <div className="flex items-center justify-between border-b border-[var(--border-subtle)] p-4">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-[#ff6d5a] to-[#ea4b34] text-white shadow-sm">
+          <div className="flex h-8 w-8 items-center justify-center rounded-[var(--radius-md)] bg-gradient-to-br from-accent-500 to-accent-700 text-white">
             <Sparkles className="h-4 w-4" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-white">
+            <h3 className="font-display text-sm font-semibold text-[var(--text-primary)]">
               AI Architecture Copilot
             </h3>
-            <p className="text-[11px] text-neutral-400">
-              System Design & Topology Intelligence
+            <p className="text-[11px] text-[var(--text-tertiary)]">
+              System design & topology intelligence
             </p>
           </div>
         </div>
 
-        <button
-          onClick={onClose}
-          className="rounded-lg p-1.5 text-neutral-400 hover:bg-[#28303e] hover:text-white transition"
-        >
-          <X className="h-4 w-4" />
-        </button>
+        <SheetCloseButton onClose={onClose} />
       </div>
 
-      {/* Mode Switcher Tabs */}
-      <div className="flex border-b border-[#2c323f] bg-[#161921] px-4 pt-2 text-xs font-semibold">
-        <button
-          onClick={() => setActiveTab("review")}
-          className={`flex items-center gap-1.5 border-b-2 px-4 py-2 transition ${
-            activeTab === "review"
-              ? "border-[#ff6d5a] text-white"
-              : "border-transparent text-neutral-400 hover:text-neutral-200"
-          }`}
-        >
-          <ShieldCheck className="h-3.5 w-3.5" />
-          <span>System Audit</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab("chat")}
-          className={`flex items-center gap-1.5 border-b-2 px-4 py-2 transition ${
-            activeTab === "chat"
-              ? "border-[#ff6d5a] text-white"
-              : "border-transparent text-neutral-400 hover:text-neutral-200"
-          }`}
-        >
-          <Bot className="h-3.5 w-3.5" />
-          <span>Copilot Q&A</span>
-        </button>
-      </div>
+      <Tabs
+        activeId={activeTab}
+        onChange={(id) => setActiveTab(id as typeof activeTab)}
+        items={[
+          { id: "review", label: "System Audit", icon: <ShieldCheck className="h-3.5 w-3.5" /> },
+          { id: "chat", label: "Copilot Q&A", icon: <Bot className="h-3.5 w-3.5" /> },
+        ]}
+        className="px-2"
+      />
 
       {/* Tab: Architectural Review */}
       {activeTab === "review" && (
         <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
           {!reviewResult && !isLoadingReview && (
-            <div className="rounded-2xl border border-[#2c3442] bg-[#1a1f29] p-6 text-center">
-              <Sparkles className="mx-auto h-10 w-10 text-[#ff6d5a]" />
-              <h4 className="mt-3 text-sm font-bold text-white">
+            <div className="rounded-[var(--radius-xl)] border border-[var(--border-subtle)] bg-[var(--surface-2)] p-6 text-center">
+              <Sparkles className="mx-auto h-10 w-10 text-accent-500" />
+              <h4 className="mt-3 text-sm font-semibold text-[var(--text-primary)]">
                 Deep-Dive Architecture Audit
               </h4>
-              <p className="mt-1 text-xs text-neutral-400">
+              <p className="mt-1 text-xs text-[var(--text-tertiary)]">
                 Let AI evaluate scalability bottlenecks, security boundaries, maintenance overhead, and operational costs for your selected {selectedTechs.length} technologies.
               </p>
-              <button
-                onClick={handleRunReview}
-                className="mt-4 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#ff6d5a] to-[#ea4b34] px-4 py-2 text-xs font-bold text-white shadow-md shadow-[#ff6d5a]/25 hover:from-[#ff5540] hover:to-[#d83f2a] transition"
-              >
+              <Button variant="primary" onClick={handleRunReview} className="mt-4 mx-auto py-2">
                 <Sparkles className="h-4 w-4" />
                 <span>Run System Audit</span>
-              </button>
+              </Button>
             </div>
           )}
 
           {isLoadingReview && (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <Loader2 className="h-8 w-8 animate-spin text-[#ff6d5a]" />
-              <p className="mt-3 text-xs font-semibold text-white">
+              <Loader2 className="h-8 w-8 animate-spin text-accent-500" />
+              <p className="mt-3 text-xs font-semibold text-[var(--text-primary)]">
                 Evaluating system architecture against enterprise patterns...
               </p>
-              <p className="mt-1 text-[11px] text-neutral-400">
+              <p className="mt-1 text-[11px] text-[var(--text-tertiary)]">
                 Analyzing data flows, caching boundaries, and security attack surfaces.
               </p>
             </div>
           )}
 
           {reviewError && (
-            <div className="rounded-xl border border-rose-900/50 bg-rose-950/40 p-4 text-rose-300">
+            <div className="rounded-[var(--radius-lg)] border border-danger-500/25 bg-danger-500/5 p-4 text-danger-300">
               <p className="font-semibold">Review Error</p>
               <p className="mt-1 text-[11px]">{reviewError}</p>
               <button
                 onClick={handleRunReview}
-                className="mt-2 text-xs font-bold text-rose-400 underline"
+                className="mt-2 text-xs font-semibold text-danger-400 underline"
               >
                 Retry Audit
               </button>
@@ -222,97 +189,91 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
           {reviewResult && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
                   Audit Report
                 </span>
                 <button
                   onClick={handleRunReview}
-                  className="flex items-center gap-1 text-[11px] font-semibold text-[#ff8a7a] hover:underline"
+                  className="flex items-center gap-1 text-[11px] font-semibold text-accent-400 hover:underline"
                 >
                   <RefreshCw className="h-3 w-3" />
                   <span>Re-audit</span>
                 </button>
               </div>
 
-              {/* Executive Summary */}
-              <div className="rounded-xl border border-[#343e4f] bg-[#1d222c] p-3.5">
-                <h5 className="font-bold text-[#ff8a7a]">
+              <div className="rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--surface-2)] p-3.5">
+                <h5 className="font-semibold text-accent-400">
                   Executive Summary
                 </h5>
-                <p className="mt-1 leading-relaxed text-neutral-300">
+                <p className="mt-1 leading-relaxed text-[var(--text-secondary)]">
                   {reviewResult.summary}
                 </p>
               </div>
 
-              {/* Strengths */}
-              <div className="rounded-xl border border-emerald-900/40 bg-emerald-950/20 p-3.5">
-                <h5 className="flex items-center gap-1.5 font-bold text-emerald-400">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+              <div className="rounded-[var(--radius-lg)] border border-success-500/25 bg-success-500/5 p-3.5">
+                <h5 className="flex items-center gap-1.5 font-semibold text-success-400">
+                  <CheckCircle2 className="h-4 w-4" />
                   <span>Key Strengths</span>
                 </h5>
-                <ul className="mt-2 space-y-1.5 text-neutral-300">
+                <ul className="mt-2 space-y-1.5 text-[var(--text-secondary)]">
                   {reviewResult.strengths.map((s, idx) => (
                     <li key={idx} className="flex items-start gap-1.5">
-                      <span className="text-emerald-400 font-bold">•</span>
+                      <span className="font-bold text-success-400">•</span>
                       <span>{s}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
-              {/* Potential Risks & Bottlenecks */}
-              <div className="rounded-xl border border-amber-900/40 bg-amber-950/20 p-3.5">
-                <h5 className="flex items-center gap-1.5 font-bold text-amber-400">
-                  <AlertTriangle className="h-4 w-4 text-amber-400" />
+              <div className="rounded-[var(--radius-lg)] border border-warning-500/25 bg-warning-500/5 p-3.5">
+                <h5 className="flex items-center gap-1.5 font-semibold text-warning-400">
+                  <AlertTriangle className="h-4 w-4" />
                   <span>Scaling Risks & Bottlenecks</span>
                 </h5>
-                <ul className="mt-2 space-y-1.5 text-neutral-300">
+                <ul className="mt-2 space-y-1.5 text-[var(--text-secondary)]">
                   {reviewResult.risks.map((r, idx) => (
                     <li key={idx} className="flex items-start gap-1.5">
-                      <span className="text-amber-400 font-bold">•</span>
+                      <span className="font-bold text-warning-400">•</span>
                       <span>{r}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
-              {/* Security Considerations */}
-              <div className="rounded-xl border border-[#2c3442] bg-[#1d222c] p-3.5">
-                <h5 className="flex items-center gap-1.5 font-bold text-white">
-                  <ShieldCheck className="h-4 w-4 text-[#ff6d5a]" />
+              <div className="rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--surface-2)] p-3.5">
+                <h5 className="flex items-center gap-1.5 font-semibold text-[var(--text-primary)]">
+                  <ShieldCheck className="h-4 w-4 text-accent-500" />
                   <span>Security & Compliance</span>
                 </h5>
-                <ul className="mt-2 space-y-1.5 text-neutral-300">
+                <ul className="mt-2 space-y-1.5 text-[var(--text-secondary)]">
                   {reviewResult.securityNotes.map((sec, idx) => (
                     <li key={idx} className="flex items-start gap-1.5">
-                      <span className="text-[#ff6d5a] font-bold">•</span>
+                      <span className="font-bold text-accent-500">•</span>
                       <span>{sec}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
-              {/* Cost Assessment */}
-              <div className="rounded-xl border border-[#2c3442] bg-[#1d222c] p-3.5">
-                <h5 className="flex items-center gap-1.5 font-bold text-white">
-                  <DollarSign className="h-4 w-4 text-emerald-400" />
+              <div className="rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--surface-2)] p-3.5">
+                <h5 className="flex items-center gap-1.5 font-semibold text-[var(--text-primary)]">
+                  <DollarSign className="h-4 w-4 text-success-400" />
                   <span>Cost & Operational Profile</span>
                 </h5>
-                <p className="mt-1 leading-relaxed text-neutral-300">
+                <p className="mt-1 leading-relaxed text-[var(--text-secondary)]">
                   {reviewResult.costAssessment}
                 </p>
               </div>
 
-              {/* Recommendations */}
               <div>
-                <h5 className="font-bold text-white">
+                <h5 className="font-semibold text-[var(--text-primary)]">
                   Recommended Next Steps
                 </h5>
                 <ul className="mt-2 space-y-1.5">
                   {reviewResult.recommendations.map((rec, idx) => (
                     <li
                       key={idx}
-                      className="rounded-xl border border-[#2c3442] bg-[#1a1f29] p-2.5 text-neutral-300"
+                      className="rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--surface-2)] p-2.5 text-[var(--text-secondary)]"
                     >
                       {rec}
                     </li>
@@ -336,38 +297,37 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
                 }`}
               >
                 {msg.sender === "copilot" && (
-                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-[#ff6d5a] text-white">
+                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[var(--radius-sm)] bg-accent-500 text-white">
                     <Bot className="h-3.5 w-3.5" />
                   </div>
                 )}
                 <div
-                  className={`max-w-[85%] rounded-2xl p-3 leading-relaxed ${
+                  className={`max-w-[85%] rounded-[var(--radius-lg)] p-3 leading-relaxed ${
                     msg.sender === "user"
-                      ? "bg-[#ff6d5a] text-white"
-                      : "border border-[#2c3442] bg-[#1d222c] text-neutral-200"
+                      ? "bg-accent-500 text-white"
+                      : "border border-[var(--border-subtle)] bg-[var(--surface-2)] text-[var(--text-secondary)]"
                   }`}
                 >
                   <p className="whitespace-pre-wrap">{msg.content}</p>
                 </div>
                 {msg.sender === "user" && (
-                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-[#2c3442] text-white">
+                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[var(--radius-sm)] bg-[var(--surface-3)] text-[var(--text-primary)]">
                     <User className="h-3.5 w-3.5" />
                   </div>
                 )}
               </div>
             ))}
             {isAsking && (
-              <div className="flex items-center gap-2 text-xs text-neutral-400">
-                <Loader2 className="h-3.5 w-3.5 animate-spin text-[#ff6d5a]" />
+              <div className="flex items-center gap-2 text-xs text-[var(--text-tertiary)]">
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-accent-500" />
                 <span>Copilot is reasoning...</span>
               </div>
             )}
           </div>
 
-          {/* Prompt input */}
           <form
             onSubmit={handleSendMessage}
-            className="border-t border-[#2c323f] bg-[#181c24] p-3"
+            className="border-t border-[var(--border-subtle)] p-3"
           >
             <div className="flex items-center gap-2">
               <input
@@ -376,19 +336,20 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
                 onChange={(e) => setQuestionInput(e.target.value)}
                 placeholder="Ask about Redis caching, Clerk webhooks, DB scaling..."
                 disabled={isAsking}
-                className="flex-1 rounded-xl border border-[#343d4d] bg-[#13161c] px-3 py-2 text-xs text-white placeholder:text-neutral-400 focus:border-[#ff6d5a] focus:bg-[#1a1f29] focus:outline-none"
+                className="flex-1 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-0)] px-3 py-2 text-xs text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-accent-500 focus:outline-none"
               />
-              <button
+              <Button
                 type="submit"
+                variant="primary"
+                size="icon"
                 disabled={!questionInput.trim() || isAsking}
-                className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-r from-[#ff6d5a] to-[#ea4b34] text-white transition hover:from-[#ff5540] hover:to-[#d83f2a] disabled:opacity-50"
               >
                 <Send className="h-3.5 w-3.5" />
-              </button>
+              </Button>
             </div>
           </form>
         </div>
       )}
-    </div>
+    </Sheet>
   );
 };
