@@ -1,104 +1,25 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import { Technology, TechCategory } from "../types";
 
-export const CATEGORY_METADATA: Record<
-  TechCategory,
-  { label: string; description: string; icon: string; defaultTier: string }
-> = {
-  frontend: {
-    label: "Frontend & Web UI",
-    description: "User interfaces, client-side rendering, and web frameworks",
-    icon: "Layout",
-    defaultTier: "client",
-  },
-  backend: {
-    label: "Backend & APIs",
-    description: "Server logic, REST/GraphQL endpoints, and business services",
-    icon: "Server",
-    defaultTier: "api",
-  },
-  mobile: {
-    label: "Mobile Apps",
-    description: "iOS, Android, and cross-platform native frameworks",
-    icon: "Smartphone",
-    defaultTier: "client",
-  },
-  database: {
-    label: "Databases & Data Stores",
-    description: "Relational, document, key-value, and distributed storage",
-    icon: "Database",
-    defaultTier: "data",
-  },
-  auth: {
-    label: "Authentication & Identity",
-    description: "User authentication, OAuth, session management, and RBAC",
-    icon: "ShieldCheck",
-    defaultTier: "external",
-  },
-  cache: {
-    label: "Cache & In-Memory",
-    description: "High-speed caching, session stores, and rate limiting",
-    icon: "Zap",
-    defaultTier: "cache",
-  },
-  storage: {
-    label: "Object & Blob Storage",
-    description: "Asset hosting, media files, document storage, and backups",
-    icon: "HardDrive",
-    defaultTier: "external",
-  },
-  payments: {
-    label: "Payments & Billing",
-    description: "Checkout flows, recurring subscriptions, and merchant payouts",
-    icon: "CreditCard",
-    defaultTier: "external",
-  },
-  messaging: {
-    label: "Messaging & Event Bus",
-    description: "Asynchronous task queues, pub/sub, and streaming pipelines",
-    icon: "Share2",
-    defaultTier: "async",
-  },
-  ai_llm: {
-    label: "AI, LLMs & Vector Search",
-    description: "Foundation models, generative AI pipelines, and embeddings",
-    icon: "Sparkles",
-    defaultTier: "external",
-  },
-  search: {
-    label: "Full-Text & Instant Search",
-    description: "Search indexes, typo tolerance, and faceted querying",
-    icon: "Search",
-    defaultTier: "data",
-  },
-  monitoring: {
-    label: "Monitoring & Observability",
-    description: "Error tracking, application performance (APM), and metrics",
-    icon: "Activity",
-    defaultTier: "observability",
-  },
-  deployment: {
-    label: "Hosting & Cloud Compute",
-    description: "Containers, serverless functions, and infrastructure providers",
-    icon: "Cloud",
-    defaultTier: "infrastructure",
-  },
-  cicd: {
-    label: "CI/CD & DevOps",
-    description: "Automated testing, build pipelines, and Infrastructure as Code",
-    icon: "GitBranch",
-    defaultTier: "infrastructure",
-  },
-  communication: {
-    label: "Email & Communications",
-    description: "Transactional emails, SMS, push notifications, and webhooks",
-    icon: "Mail",
-    defaultTier: "external",
-  },
+/**
+ * Icon per category (display text lives in the i18n translations dictionary,
+ * see src/i18n/translations.ts -> categories).
+ */
+export const CATEGORY_METADATA: Record<TechCategory, { icon: string }> = {
+  frontend: { icon: "Layout" },
+  backend: { icon: "Server" },
+  mobile: { icon: "Smartphone" },
+  database: { icon: "Database" },
+  auth: { icon: "ShieldCheck" },
+  cache: { icon: "Zap" },
+  storage: { icon: "HardDrive" },
+  payments: { icon: "CreditCard" },
+  messaging: { icon: "Share2" },
+  ai_llm: { icon: "Sparkles" },
+  search: { icon: "Search" },
+  monitoring: { icon: "Activity" },
+  deployment: { icon: "Cloud" },
+  cicd: { icon: "GitBranch" },
+  communication: { icon: "Mail" },
 };
 
 export const TECH_CATALOG: Technology[] = [

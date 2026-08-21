@@ -1,8 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import { ProjectConfig, Technology, ValidationIssue } from "../types";
 
 export function validateArchitecture(

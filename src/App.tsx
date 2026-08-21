@@ -1,15 +1,9 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Header } from "./components/Header";
 import { StackPicker } from "./components/StackPicker";
 import { DiagramCanvas } from "./components/DiagramCanvas";
 import { ComponentInspector } from "./components/ComponentInspector";
 import { ValidationPanel } from "./components/ValidationPanel";
-import { AICopilotDrawer } from "./components/AICopilotDrawer";
 import { ProjectConfigModal } from "./components/ProjectConfigModal";
 import { PresetsModal } from "./components/PresetsModal";
 import { ExportModal } from "./components/ExportModal";
@@ -19,14 +13,15 @@ import { ProjectConfig, Technology, ValidationIssue, StackPreset } from "./types
 import { TECH_BY_ID } from "./engine/catalog";
 import { generateArchitectureModel } from "./engine/architectureEngine";
 import { validateArchitecture } from "./engine/validator";
-import { askAISuggestStack } from "./services/aiService";
-import { Layers, SlidersHorizontal, Sparkles } from "lucide-react";
+import { Layers, SlidersHorizontal } from "lucide-react";
 import { Sheet } from "./components/ui/Sheet";
 import { useMediaQuery } from "./lib/useMediaQuery";
+import { useLanguage } from "./i18n/LanguageContext";
 
 type AppPhase = "wizard" | "diagram";
 
 export default function App() {
+  const { t } = useLanguage();
   const [darkMode, setDarkMode] = useState(true);
 
   useEffect(() => {
@@ -41,7 +36,7 @@ export default function App() {
 
   const [project, setProject] = useState<ProjectConfig>({
     id: "local",
-    name: "My Architecture",
+    name: "",
     type: "saas",
     description: "",
     expectedTraffic: "medium",
@@ -52,11 +47,9 @@ export default function App() {
   const [selectedTechIds, setSelectedTechIds] = useState<string[]>([]);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
-  const [isAiDrawerOpen, setIsAiDrawerOpen] = useState(false);
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [isPresetsModalOpen, setIsPresetsModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
 
   // Below `lg` (1024px), side panels become full-screen overlay sheets.
   const isDesktop = useMediaQuery("(min-width: 1024px)");
@@ -105,27 +98,6 @@ export default function App() {
     setAppPhase("diagram");
   }, []);
 
-  const handleAIGenerateFromPrompt = useCallback(async (promptText: string) => {
-    setIsGeneratingAI(true);
-    try {
-      const result = await askAISuggestStack(promptText, selectedTechIds);
-      if (result.recommendedTechIds && result.recommendedTechIds.length > 0) {
-        setSelectedTechIds(result.recommendedTechIds);
-        setProject((prev) => ({
-          ...prev,
-          name: result.projectName || prev.name,
-          type: result.projectType || prev.type,
-          description: result.description || prev.description,
-        }));
-        setSelectedNodeId(null);
-      }
-    } catch (err: any) {
-      console.error("AI Stack generation error:", err);
-    } finally {
-      setIsGeneratingAI(false);
-    }
-  }, [selectedTechIds]);
-
   const handleWizardComplete = useCallback(() => {
     setAppPhase("diagram");
     setSelectedNodeId(null);
@@ -148,8 +120,6 @@ export default function App() {
           darkMode={darkMode}
           onToggleDarkMode={() => setDarkMode(!darkMode)}
           onOpenTemplates={() => setIsPresetsModalOpen(true)}
-          isGeneratingAI={isGeneratingAI}
-          onAIQuickStart={handleAIGenerateFromPrompt}
           hasExistingStack={selectedTechIds.length > 0}
           onCancel={() => setAppPhase("diagram")}
         />
@@ -163,13 +133,13 @@ export default function App() {
   }
 
   return (
-    <div className="flex h-screen w-screen flex-col overflow-hidden bg-[var(--surface-0)] font-sans text-[var(--text-primary)] antialiased">
+    <div className="flex h-dvh w-screen flex-col overflow-hidden bg-[var(--surface-0)] font-sans text-[var(--text-primary)] antialiased">
+      <div className="grain-overlay" aria-hidden="true" />
+      <a href="#main-content" className="skip-link">Skip to content</a>
       <Header
         project={project}
         selectedCount={selectedTechIds.length}
         issues={validationIssues}
-        isAiDrawerOpen={isAiDrawerOpen}
-        onToggleAiDrawer={() => setIsAiDrawerOpen(!isAiDrawerOpen)}
         onOpenProjectModal={() => setIsProjectModalOpen(true)}
         onOpenPresetsModal={() => setIsPresetsModalOpen(true)}
         onOpenExportModal={() => setIsExportModalOpen(true)}
@@ -178,7 +148,7 @@ export default function App() {
         onToggleDarkMode={() => setDarkMode(!darkMode)}
       />
 
-      <div className="relative flex flex-1 overflow-hidden">
+      <main id="main-content" className="relative flex flex-1 overflow-hidden">
         {/* Left: add / remove components — docked on desktop */}
         <div
           className={`relative z-10 hidden flex-col transition-all duration-300 lg:flex ${
@@ -197,7 +167,7 @@ export default function App() {
           className={`absolute top-1/2 z-20 hidden -translate-y-1/2 rounded-r-[var(--radius-md)] border border-l-0 border-[var(--border-default)] bg-[var(--surface-2)] p-1.5 text-[var(--text-tertiary)] shadow-[var(--elevation-2)] transition hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] lg:block ${
             isSidebarOpen ? "lg:left-80 xl:left-96" : "left-0"
           }`}
-          title={isSidebarOpen ? "Collapse panel" : "Add components"}
+          title={t.stackPicker.title}
         >
           <Layers className="h-3.5 w-3.5" />
         </button>
@@ -252,15 +222,7 @@ export default function App() {
             )}
           </Sheet>
         )}
-
-        <AICopilotDrawer
-          isOpen={isAiDrawerOpen}
-          onClose={() => setIsAiDrawerOpen(false)}
-          project={project}
-          selectedTechs={selectedTechs}
-          issues={validationIssues}
-        />
-      </div>
+      </main>
 
       <div className="flex items-stretch border-t border-[var(--border-subtle)] bg-[var(--surface-1)] pb-[env(safe-area-inset-bottom)] lg:hidden">
         <button
@@ -270,7 +232,7 @@ export default function App() {
           }`}
         >
           <Layers className="h-[18px] w-[18px]" />
-          <span>Stack ({selectedTechIds.length})</span>
+          <span>{t.stackPicker.title} ({selectedTechIds.length})</span>
         </button>
 
         <button
@@ -281,17 +243,7 @@ export default function App() {
           }`}
         >
           <SlidersHorizontal className="h-[18px] w-[18px]" />
-          <span>Inspector</span>
-        </button>
-
-        <button
-          onClick={() => setIsAiDrawerOpen(!isAiDrawerOpen)}
-          className={`flex flex-1 flex-col items-center gap-0.5 py-2 text-[10px] font-medium transition ${
-            isAiDrawerOpen ? "text-accent-500" : "text-[var(--text-tertiary)]"
-          }`}
-        >
-          <Sparkles className="h-[18px] w-[18px]" />
-          <span>Copilot</span>
+          <span>{t.inspector.panelTitle}</span>
         </button>
       </div>
 
@@ -312,6 +264,7 @@ export default function App() {
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}
         model={model}
+        darkMode={darkMode}
       />
     </div>
   );

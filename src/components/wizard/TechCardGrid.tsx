@@ -1,12 +1,8 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import React from "react";
 import { Check, Plus, ExternalLink } from "lucide-react";
 import { Technology } from "../../types";
 import { IconTile } from "../ui/IconTile";
+import { useLanguage } from "../../i18n/LanguageContext";
 import { cn } from "../../lib/cn";
 
 interface TechCardGridProps {
@@ -16,6 +12,7 @@ interface TechCardGridProps {
 }
 
 export const TechCardGrid: React.FC<TechCardGridProps> = ({ techs, selectedSet, onToggle }) => {
+  const { t } = useLanguage();
   return (
     <div className="@container">
     <div className="grid grid-cols-1 gap-3 @sm:grid-cols-2 @xl:grid-cols-3">
@@ -57,7 +54,7 @@ export const TechCardGrid: React.FC<TechCardGridProps> = ({ techs, selectedSet, 
             </div>
 
             <div className="mt-auto flex items-center justify-between border-t border-[var(--border-subtle)] pt-2.5 text-[10px] text-[var(--text-tertiary)]">
-              <span>{tech.pricingModel}</span>
+              <span>{t.pricingModel[tech.pricingModel] ?? tech.pricingModel}</span>
               <a
                 href={tech.documentationUrl}
                 target="_blank"
@@ -65,7 +62,7 @@ export const TechCardGrid: React.FC<TechCardGridProps> = ({ techs, selectedSet, 
                 onClick={(e) => e.stopPropagation()}
                 className="flex items-center gap-0.5 hover:text-accent-400"
               >
-                <span>Docs</span>
+                <span>{t.common.docs}</span>
                 <ExternalLink className="h-2.5 w-2.5" />
               </a>
             </div>

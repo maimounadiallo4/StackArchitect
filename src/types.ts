@@ -1,8 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 export type ProjectType =
   | "saas"
   | "web"
@@ -135,10 +130,15 @@ export interface ArchitectureNode {
   tags: string[];
 }
 
+export type LaneKey = "actors" | "client" | "backend" | "data" | "external" | "infrastructure";
+
 export interface ArchitectureZone {
   id: string;
+  /** English fallback title (also used by non-React consumers like SVG/PNG export). */
   title: string;
-  deploymentZone: DeploymentZone;
+  /** Stable key for UI-layer i18n lookup, set for system-view lanes only. */
+  laneKey?: LaneKey;
+  deploymentZone?: DeploymentZone;
   x: number;
   y: number;
   width: number;
@@ -188,32 +188,4 @@ export interface StackPreset {
   highlights: string[];
 }
 
-export interface AICopilotMessage {
-  id: string;
-  sender: "user" | "copilot";
-  timestamp: string;
-  content: string;
-  actionableTechs?: string[];
-}
-
-export interface AIReviewResult {
-  summary: string;
-  strengths: string[];
-  risks: string[];
-  securityNotes: string[];
-  costAssessment: string;
-  recommendations: string[];
-}
-
-export type NodeExecutionStatus = "idle" | "running" | "success" | "error";
-
-export interface NodeExecutionResult {
-  nodeId: string;
-  status: NodeExecutionStatus;
-  latencyMs?: number;
-  statusCode?: number;
-  outputPayload?: Record<string, any>;
-  timestamp?: string;
-  error?: string;
-}
 

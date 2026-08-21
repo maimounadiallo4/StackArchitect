@@ -1,12 +1,8 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
 import { ArchitectureModel } from "../types";
 import { IconTile } from "./ui/IconTile";
+import { useLanguage } from "../i18n/LanguageContext";
 import { cn } from "../lib/cn";
 
 interface DiagramCanvasProps {
@@ -21,6 +17,7 @@ const DEFAULT_SCALE = 0.9;
 const DEFAULT_PAN = { x: 60, y: 50 };
 
 export const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ model, selectedNodeId, onSelectNode }) => {
+  const { t } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(DEFAULT_SCALE);
   const [pan, setPan] = useState(DEFAULT_PAN);
@@ -166,7 +163,7 @@ export const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ model, selectedNod
     return (
       <div className="canvas-grid relative flex flex-1 items-center justify-center overflow-hidden">
         <div className="rounded-[var(--radius-lg)] border border-dashed border-[var(--border-default)] bg-[var(--surface-1)]/80 px-6 py-5 text-center text-sm text-[var(--text-tertiary)]">
-          Add components from the panel to see your architecture diagram.
+          {t.diagram.empty}
         </div>
       </div>
     );
@@ -189,21 +186,21 @@ export const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ model, selectedNod
         <button
           onClick={() => handleZoom(0.15)}
           className="rounded-[var(--radius-sm)] p-1.5 text-[var(--text-tertiary)] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] transition"
-          title="Zoom In"
+          title={t.diagram.zoomIn}
         >
           <ZoomIn className="h-4 w-4" />
         </button>
         <button
           onClick={() => handleZoom(-0.15)}
           className="rounded-[var(--radius-sm)] p-1.5 text-[var(--text-tertiary)] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] transition"
-          title="Zoom Out"
+          title={t.diagram.zoomOut}
         >
           <ZoomOut className="h-4 w-4" />
         </button>
         <button
           onClick={handleResetView}
           className="rounded-[var(--radius-sm)] p-1.5 text-[var(--text-tertiary)] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] transition"
-          title="Center & Reset"
+          title={t.diagram.resetView}
         >
           <Maximize2 className="h-4 w-4" />
         </button>
@@ -225,6 +222,51 @@ export const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ model, selectedNod
               <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="var(--color-accent-500)" />
             </marker>
           </defs>
+
+          {/* Layer lanes — frame each architectural tier */}
+          {model.zones.map((zone) => {
+            const label = zone.laneKey ? t.lanes[zone.laneKey] : zone.title;
+            const labelWidth = Math.min(zone.width - 16, Math.max(70, label.length * 6.5 + 28));
+            return (
+              <g key={zone.id}>
+                <rect
+                  x={zone.x}
+                  y={zone.y}
+                  width={zone.width}
+                  height={zone.height}
+                  rx="18"
+                  ry="18"
+                  fill={`${zone.color}0c`}
+                  stroke={`${zone.color}45`}
+                  strokeWidth="1.5"
+                  strokeDasharray="7 6"
+                />
+                <rect
+                  x={zone.x + 12}
+                  y={zone.y + 10}
+                  width={labelWidth}
+                  height="22"
+                  rx="7"
+                  ry="7"
+                  fill="var(--surface-1)"
+                  stroke={`${zone.color}55`}
+                  strokeWidth="1"
+                />
+                <text
+                  x={zone.x + 12 + labelWidth / 2}
+                  y={zone.y + 25}
+                  fill={zone.color}
+                  fontSize="10.5"
+                  fontWeight="700"
+                  textAnchor="middle"
+                  fontFamily="system-ui, sans-serif"
+                  style={{ letterSpacing: "0.03em", textTransform: "uppercase" }}
+                >
+                  {label}
+                </text>
+              </g>
+            );
+          })}
 
           {model.edges.map((edge) => {
             const srcNode = nodeMap.get(edge.source);
@@ -295,7 +337,7 @@ export const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ model, selectedNod
                 </div>
               </div>
               <span className="w-fit rounded-[var(--radius-sm)] bg-[var(--surface-3)] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
-                {node.category}
+                {t.categories[node.category as keyof typeof t.categories]?.label.split(" ")[0] ?? node.category}
               </span>
             </div>
           );
@@ -303,9 +345,9 @@ export const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ model, selectedNod
       </div>
 
       <div className="absolute bottom-3 left-3 z-20 flex items-center gap-2.5 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-1)]/95 px-3.5 py-2 text-xs text-[var(--text-secondary)] shadow-[var(--elevation-3)] backdrop-blur-md sm:bottom-4 sm:left-4">
-        <span className="font-semibold text-[var(--text-primary)]">{model.nodes.length} components</span>
+        <span className="font-semibold text-[var(--text-primary)]">{model.nodes.length} {t.diagram.components}</span>
         <span className="text-[var(--text-tertiary)]">·</span>
-        <span className="font-medium text-accent-400">{model.stats.estimatedComplexity}</span>
+        <span className="font-medium text-accent-400">{t.complexity[model.stats.estimatedComplexity] ?? model.stats.estimatedComplexity}</span>
       </div>
     </div>
   );

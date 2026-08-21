@@ -1,8 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import { Technology, ArchitectureEdge, ProtocolType, EdgeFlowNature } from "../types";
 
 export interface ConnectionRule {

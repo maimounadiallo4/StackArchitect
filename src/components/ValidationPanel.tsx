@@ -1,8 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import React, { useState } from "react";
 import {
   AlertTriangle,
@@ -15,6 +10,7 @@ import {
 } from "lucide-react";
 import { ValidationIssue } from "../types";
 import { Button } from "./ui/Button";
+import { useLanguage } from "../i18n/LanguageContext";
 import { cn } from "../lib/cn";
 
 interface ValidationPanelProps {
@@ -26,18 +22,25 @@ export const ValidationPanel: React.FC<ValidationPanelProps> = ({
   issues,
   onAutoFix,
 }) => {
+  const { t } = useLanguage();
   const [isExpanded, setIsExpanded] = useState(false);
 
   const errors = issues.filter((i) => i.severity === "error");
   const warnings = issues.filter((i) => i.severity === "warning");
   const suggestions = issues.filter((i) => i.severity === "suggestion");
 
+  const severityLabel: Record<ValidationIssue["severity"], string> = {
+    error: t.validation.error,
+    warning: t.validation.warning,
+    suggestion: t.validation.suggestion,
+  };
+
   if (issues.length === 0) {
     return (
       <div className="flex items-center gap-2 border-t border-[var(--border-subtle)] bg-[var(--surface-1)] px-4 py-2 text-xs text-success-400">
         <ShieldCheck className="h-4 w-4" />
-        <span className="font-semibold">Validation passed</span>
-        <span className="hidden text-[var(--text-tertiary)] sm:inline">— all component interfaces and protocol pipelines are valid.</span>
+        <span className="font-semibold">{t.validation.passedTitle}</span>
+        <span className="hidden text-[var(--text-tertiary)] sm:inline">— {t.validation.passedDetail}</span>
       </div>
     );
   }
@@ -55,33 +58,33 @@ export const ValidationPanel: React.FC<ValidationPanelProps> = ({
         <div className="flex items-center gap-3">
           <div className="hidden items-center gap-1.5 font-semibold text-[var(--text-primary)] sm:flex">
             <ShieldCheck className="h-3.5 w-3.5 text-accent-500" />
-            <span>Architecture Diagnostics</span>
+            <span>{t.validation.diagnostics}</span>
           </div>
 
           <div className="flex items-center gap-1.5">
             {errors.length > 0 && (
               <span className="flex items-center gap-1 rounded-full bg-danger-500/10 border border-danger-500/30 px-2 py-0.5 text-[10px] font-semibold text-danger-400">
                 <AlertCircle className="h-3 w-3" />
-                {errors.length} {errors.length === 1 ? "Error" : "Errors"}
+                {errors.length} {errors.length === 1 ? t.validation.error : t.validation.errors}
               </span>
             )}
             {warnings.length > 0 && (
               <span className="flex items-center gap-1 rounded-full bg-warning-500/10 border border-warning-500/30 px-2 py-0.5 text-[10px] font-semibold text-warning-400">
                 <AlertTriangle className="h-3 w-3" />
-                {warnings.length} {warnings.length === 1 ? "Warning" : "Warnings"}
+                {warnings.length} {warnings.length === 1 ? t.validation.warning : t.validation.warnings}
               </span>
             )}
             {suggestions.length > 0 && (
               <span className="flex items-center gap-1 rounded-full bg-accent-500/10 border border-accent-500/30 px-2 py-0.5 text-[10px] font-semibold text-accent-400">
                 <Lightbulb className="h-3 w-3" />
-                {suggestions.length} <span className="hidden sm:inline">Suggestions</span>
+                {suggestions.length} <span className="hidden sm:inline">{t.validation.suggestions}</span>
               </span>
             )}
           </div>
         </div>
 
         <div className="flex items-center gap-2 text-[var(--text-tertiary)]">
-          <span className="hidden text-[11px] font-medium sm:inline">{isExpanded ? "Collapse" : "Expand Details"}</span>
+          <span className="hidden text-[11px] font-medium sm:inline">{isExpanded ? t.validation.collapse : t.validation.expand}</span>
           {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
         </div>
       </div>
@@ -117,14 +120,14 @@ export const ValidationPanel: React.FC<ValidationPanelProps> = ({
                         {issue.title}
                       </h4>
                       <span className={cn("rounded px-1.5 py-0.2 text-[9px] font-bold uppercase", badgeClass)}>
-                        {issue.severity}
+                        {severityLabel[issue.severity]}
                       </span>
                     </div>
                     <p className="mt-1 leading-relaxed text-[var(--text-secondary)]">
                       {issue.message}
                     </p>
                     <p className="mt-1.5 font-medium text-[var(--text-primary)]">
-                      <span className="text-[var(--text-tertiary)]">Recommendation:</span> {issue.recommendation}
+                      <span className="text-[var(--text-tertiary)]">{t.validation.recommendation}</span> {issue.recommendation}
                     </p>
                   </div>
                 </div>

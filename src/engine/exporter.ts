@@ -1,8 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import { ArchitectureModel, ViewLevel } from "../types";
 
 export interface ExportResult {

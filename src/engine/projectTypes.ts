@@ -1,28 +1,23 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import { ProjectType, TechCategory } from "../types";
 
 export interface ProjectTypeMeta {
   type: ProjectType;
-  label: string;
-  tagline: string;
   icon: string;
   accentColor: string;
 }
 
+/** Display order + visual accents for the project type picker. Text labels
+ * live in the i18n translations dictionary (see src/i18n/translations.ts). */
 export const PROJECT_TYPE_META: ProjectTypeMeta[] = [
-  { type: "saas", label: "SaaS / B2B App", tagline: "Subscriptions, workspaces, team accounts", icon: "Layers", accentColor: "#6366f1" },
-  { type: "ai_app", label: "AI / LLM App", tagline: "RAG, embeddings, model inference", icon: "Sparkles", accentColor: "#a855f7" },
-  { type: "mobile", label: "Mobile App", tagline: "iOS, Android, cross-platform", icon: "Smartphone", accentColor: "#0ea5e9" },
-  { type: "ecommerce", label: "E-Commerce", tagline: "Checkout, catalog, instant search", icon: "ShoppingCart", accentColor: "#2fa876" },
-  { type: "marketplace", label: "Marketplace", tagline: "Two-sided buyers, sellers, payouts", icon: "Store", accentColor: "#c9a227" },
-  { type: "realtime", label: "Real-Time App", tagline: "Live sync, sockets, collaboration", icon: "Zap", accentColor: "#d99a2b" },
-  { type: "microservices", label: "Microservices", tagline: "Decoupled services, event bus", icon: "Network", accentColor: "#e2574c" },
-  { type: "api", label: "API / Backend", tagline: "REST or GraphQL service, no UI", icon: "Server", accentColor: "#3a93b8" },
-  { type: "web", label: "Website", tagline: "Content site or simple web app", icon: "Globe", accentColor: "#8c8163" },
+  { type: "saas", icon: "Layers", accentColor: "#6366f1" },
+  { type: "ai_app", icon: "Sparkles", accentColor: "#a855f7" },
+  { type: "mobile", icon: "Smartphone", accentColor: "#0ea5e9" },
+  { type: "ecommerce", icon: "ShoppingCart", accentColor: "#2fa876" },
+  { type: "marketplace", icon: "Store", accentColor: "#c9a227" },
+  { type: "realtime", icon: "Zap", accentColor: "#d99a2b" },
+  { type: "microservices", icon: "Network", accentColor: "#e2574c" },
+  { type: "api", icon: "Server", accentColor: "#3a93b8" },
+  { type: "web", icon: "Globe", accentColor: "#8c8163" },
 ];
 
 /**

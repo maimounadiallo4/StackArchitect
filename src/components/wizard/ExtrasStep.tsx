@@ -1,14 +1,10 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import React, { useMemo, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { TechCategory } from "../../types";
 import { TECH_CATALOG, CATEGORY_METADATA } from "../../engine/catalog";
 import { IconHelper } from "../IconHelper";
 import { TechCardGrid } from "./TechCardGrid";
+import { useLanguage } from "../../i18n/LanguageContext";
 import { cn } from "../../lib/cn";
 
 interface ExtrasStepProps {
@@ -18,6 +14,7 @@ interface ExtrasStepProps {
 }
 
 export const ExtrasStep: React.FC<ExtrasStepProps> = ({ coveredCategories, selectedTechIds, onToggleTech }) => {
+  const { t } = useLanguage();
   const remainingCategories = useMemo(() => {
     const covered = new Set(coveredCategories);
     return (Object.keys(CATEGORY_METADATA) as TechCategory[]).filter((c) => !covered.has(c));
@@ -41,15 +38,16 @@ export const ExtrasStep: React.FC<ExtrasStepProps> = ({ coveredCategories, selec
   return (
     <div className="rise-in">
       <div className="mb-6">
-        <h2 className="font-display text-xl font-semibold text-[var(--text-primary)] sm:text-2xl">Anything else?</h2>
+        <h2 className="font-display text-xl font-semibold tracking-tight text-[var(--text-primary)] sm:text-2xl">{t.extras.heading}</h2>
         <p className="mt-1 max-w-xl text-sm text-[var(--text-secondary)]">
-          Optional building blocks — caching, search, monitoring, and more. Add only what your project needs.
+          {t.extras.subheading}
         </p>
       </div>
 
       <div className="space-y-2.5">
         {remainingCategories.map((cat) => {
-          const meta = CATEGORY_METADATA[cat];
+          const icon = CATEGORY_METADATA[cat].icon;
+          const meta = t.categories[cat];
           const isOpen = expanded.has(cat);
           const count = countFor(cat);
           const techs = TECH_CATALOG.filter((t) => t.category === cat);
@@ -66,7 +64,7 @@ export const ExtrasStep: React.FC<ExtrasStepProps> = ({ coveredCategories, selec
               >
                 <div className="flex items-center gap-3">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--surface-3)] text-[var(--text-secondary)]">
-                    <IconHelper name={meta.icon} size={16} />
+                    <IconHelper name={icon} size={16} />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">

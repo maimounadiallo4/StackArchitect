@@ -1,14 +1,10 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import React, { useState, useMemo } from "react";
 import { Search, X, Layers } from "lucide-react";
 import { TechCategory } from "../types";
 import { TECH_CATALOG, CATEGORY_METADATA } from "../engine/catalog";
 import { IconHelper } from "./IconHelper";
 import { TechCardGrid } from "./wizard/TechCardGrid";
+import { useLanguage } from "../i18n/LanguageContext";
 import { cn } from "../lib/cn";
 
 interface StackPickerProps {
@@ -25,6 +21,7 @@ export const StackPicker: React.FC<StackPickerProps> = ({
   onClearCategory,
   onRequestClose,
 }) => {
+  const { t } = useLanguage();
   const [selectedCategory, setSelectedCategory] = useState<TechCategory | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -57,7 +54,7 @@ export const StackPicker: React.FC<StackPickerProps> = ({
         <div className="mb-2.5 flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
             <Layers className="h-3.5 w-3.5 text-accent-500" />
-            <span>Add components</span>
+            <span>{t.stackPicker.title}</span>
           </div>
           {onRequestClose && (
             <button
@@ -73,7 +70,7 @@ export const StackPicker: React.FC<StackPickerProps> = ({
           <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-[var(--text-tertiary)]" />
           <input
             type="text"
-            placeholder="Search technologies..."
+            placeholder={t.stackPicker.searchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-2)] py-2 pl-9 pr-3 text-xs text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] transition focus:border-accent-500 focus:outline-none focus:ring-1 focus:ring-accent-500"
@@ -90,10 +87,11 @@ export const StackPicker: React.FC<StackPickerProps> = ({
                 : "bg-[var(--surface-2)] text-[var(--text-secondary)] hover:bg-[var(--surface-3)]"
             )}
           >
-            All
+            {t.stackPicker.all}
           </button>
           {categories.map((cat) => {
-            const meta = CATEGORY_METADATA[cat];
+            const icon = CATEGORY_METADATA[cat].icon;
+            const label = t.categories[cat].label;
             const count = selectedCountsByCategory[cat] || 0;
             const isSelected = selectedCategory === cat;
             return (
@@ -107,8 +105,8 @@ export const StackPicker: React.FC<StackPickerProps> = ({
                     : "bg-[var(--surface-2)] text-[var(--text-secondary)] hover:bg-[var(--surface-3)]"
                 )}
               >
-                <IconHelper name={meta.icon} size={13} />
-                <span>{meta.label.split(" ")[0]}</span>
+                <IconHelper name={icon} size={13} />
+                <span>{label.split(" ")[0]}</span>
                 {count > 0 && (
                   <span
                     className={cn(
@@ -131,7 +129,7 @@ export const StackPicker: React.FC<StackPickerProps> = ({
             onClick={() => onClearCategory(selectedCategory)}
             className="mb-2.5 text-[11px] font-semibold text-danger-400 hover:underline"
           >
-            Clear this layer
+            {t.stackPicker.clearLayer}
           </button>
         )}
 
@@ -140,7 +138,7 @@ export const StackPicker: React.FC<StackPickerProps> = ({
         {filteredTechs.length === 0 && (
           <div className="py-12 text-center text-xs text-[var(--text-tertiary)]">
             <Search className="mx-auto mb-2 h-8 w-8 opacity-40" />
-            <p className="font-semibold text-[var(--text-primary)]">No components found</p>
+            <p className="font-semibold text-[var(--text-primary)]">{t.stackPicker.noResults}</p>
           </div>
         )}
       </div>

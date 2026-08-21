@@ -1,12 +1,8 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import React, { useState } from "react";
 import { ProjectConfig } from "../types";
 import { Modal } from "./ui/Modal";
 import { Button } from "./ui/Button";
+import { useLanguage } from "../i18n/LanguageContext";
 
 interface ProjectConfigModalProps {
   isOpen: boolean;
@@ -21,6 +17,7 @@ export const ProjectConfigModal: React.FC<ProjectConfigModalProps> = ({
   config,
   onSave,
 }) => {
+  const { t } = useLanguage();
   const [name, setName] = useState(config.name);
   const [description, setDescription] = useState(config.description);
   const [expectedTraffic, setExpectedTraffic] = useState(config.expectedTraffic);
@@ -32,7 +29,7 @@ export const ProjectConfigModal: React.FC<ProjectConfigModalProps> = ({
     e.preventDefault();
     onSave({
       ...config,
-      name: name.trim() || "Untitled Architecture",
+      name: name.trim() || config.name,
       description: description.trim(),
       expectedTraffic,
       budgetConstraint,
@@ -48,28 +45,28 @@ export const ProjectConfigModal: React.FC<ProjectConfigModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       icon="SlidersHorizontal"
-      title="Project Profile"
-      subtitle="Fine-tune the context used to validate your architecture."
+      title={t.projectConfigModal.title}
+      subtitle={t.projectConfigModal.subtitle}
       maxWidth="max-w-lg"
     >
       <form onSubmit={handleSubmit} className="space-y-4 p-4 text-xs sm:p-5">
         <div>
-          <label className="block font-semibold text-[var(--text-secondary)]">Project Name</label>
+          <label className="block font-semibold text-[var(--text-secondary)]">{t.projectConfigModal.nameLabel}</label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Orbit"
+            placeholder={t.projectConfigModal.namePlaceholder}
             className={inputClass}
           />
         </div>
 
         <div>
-          <label className="block font-semibold text-[var(--text-secondary)]">Description</label>
+          <label className="block font-semibold text-[var(--text-secondary)]">{t.projectConfigModal.descriptionLabel}</label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="What does this project do?"
+            placeholder={t.projectConfigModal.descriptionPlaceholder}
             rows={3}
             className={`${inputClass} resize-none`}
           />
@@ -77,39 +74,39 @@ export const ProjectConfigModal: React.FC<ProjectConfigModalProps> = ({
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
-            <label className="block font-semibold text-[var(--text-secondary)]">Expected Traffic</label>
+            <label className="block font-semibold text-[var(--text-secondary)]">{t.projectConfigModal.trafficLabel}</label>
             <select
               value={expectedTraffic}
               onChange={(e) => setExpectedTraffic(e.target.value as any)}
               className={inputClass}
             >
-              <option value="low">Low (&lt; 10k req/day)</option>
-              <option value="medium">Medium (100k req/day)</option>
-              <option value="high">High (1M+ req/day)</option>
-              <option value="enterprise">Enterprise scale</option>
+              <option value="low">{t.projectConfigModal.traffic.low}</option>
+              <option value="medium">{t.projectConfigModal.traffic.medium}</option>
+              <option value="high">{t.projectConfigModal.traffic.high}</option>
+              <option value="enterprise">{t.projectConfigModal.traffic.enterprise}</option>
             </select>
           </div>
 
           <div>
-            <label className="block font-semibold text-[var(--text-secondary)]">Budget</label>
+            <label className="block font-semibold text-[var(--text-secondary)]">{t.projectConfigModal.budgetLabel}</label>
             <select
               value={budgetConstraint}
               onChange={(e) => setBudgetConstraint(e.target.value as any)}
               className={inputClass}
             >
-              <option value="free_tier">Free tier / cost efficiency</option>
-              <option value="moderate">Balanced production</option>
-              <option value="scale_ready">Scale-ready priority</option>
+              <option value="free_tier">{t.projectConfigModal.budget.free_tier}</option>
+              <option value="moderate">{t.projectConfigModal.budget.moderate}</option>
+              <option value="scale_ready">{t.projectConfigModal.budget.scale_ready}</option>
             </select>
           </div>
         </div>
 
         <div className="mt-6 flex items-center justify-end gap-2 border-t border-[var(--border-subtle)] pt-4">
           <Button type="button" variant="ghost" onClick={onClose}>
-            Cancel
+            {t.projectConfigModal.cancel}
           </Button>
           <Button type="submit" variant="primary">
-            Save
+            {t.projectConfigModal.save}
           </Button>
         </div>
       </form>

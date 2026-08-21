@@ -1,6 +1,0 @@
-{
-  "name": "Stack Architect",
-  "description": "Interactive Stack Picker & Technical Architecture Generator with multi-level system diagrams, relationship engine, consistency validation, and AI Copilot.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}

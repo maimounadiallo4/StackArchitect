@@ -1,8 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import React, { useState } from "react";
 import { X, ExternalLink, ArrowRight, ArrowLeft, Trash2, Share2, Info } from "lucide-react";
 import { ArchitectureModel } from "../types";
@@ -10,6 +5,7 @@ import { TECH_BY_ID } from "../engine/catalog";
 import { IconTile } from "./ui/IconTile";
 import { Tabs } from "./ui/Tabs";
 import { Button } from "./ui/Button";
+import { useLanguage } from "../i18n/LanguageContext";
 
 interface ComponentInspectorProps {
   nodeId: string;
@@ -26,6 +22,7 @@ export const ComponentInspector: React.FC<ComponentInspectorProps> = ({
   onRemoveTech,
   onSelectNode,
 }) => {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<"about" | "connections">("about");
 
   const node = model.nodes.find((n) => n.id === nodeId);
@@ -34,6 +31,7 @@ export const ComponentInspector: React.FC<ComponentInspectorProps> = ({
   const tech = node.techId ? TECH_BY_ID.get(node.techId) : null;
   const inboundEdges = model.edges.filter((e) => e.target === node.id);
   const outboundEdges = model.edges.filter((e) => e.source === node.id);
+  const categoryLabel = t.categories[node.category as keyof typeof t.categories]?.label ?? node.category;
 
   return (
     <div
@@ -61,8 +59,8 @@ export const ComponentInspector: React.FC<ComponentInspectorProps> = ({
         activeId={activeTab}
         onChange={(id) => setActiveTab(id as typeof activeTab)}
         items={[
-          { id: "about", label: "About", icon: <Info className="h-3.5 w-3.5" /> },
-          { id: "connections", label: `Connections (${inboundEdges.length + outboundEdges.length})`, icon: <Share2 className="h-3.5 w-3.5" /> },
+          { id: "about", label: t.inspector.about, icon: <Info className="h-3.5 w-3.5" /> },
+          { id: "connections", label: `${t.inspector.connections} (${inboundEdges.length + outboundEdges.length})`, icon: <Share2 className="h-3.5 w-3.5" /> },
         ]}
       />
 
@@ -70,26 +68,26 @@ export const ComponentInspector: React.FC<ComponentInspectorProps> = ({
         {activeTab === "about" && (
           <>
             <div>
-              <h4 className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">Role</h4>
+              <h4 className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">{t.inspector.role}</h4>
               <p className="mt-1 leading-relaxed text-[var(--text-secondary)]">{node.description}</p>
             </div>
 
             <div className="grid grid-cols-2 gap-2.5 rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--surface-2)] p-3">
               <div>
-                <span className="text-[10px] text-[var(--text-tertiary)]">Category</span>
-                <p className="font-semibold uppercase text-[var(--text-primary)]">{node.category}</p>
+                <span className="text-[10px] text-[var(--text-tertiary)]">{t.inspector.category}</span>
+                <p className="font-semibold text-[var(--text-primary)]">{categoryLabel}</p>
               </div>
               {tech && (
                 <div>
-                  <span className="text-[10px] text-[var(--text-tertiary)]">Pricing</span>
-                  <p className="font-semibold text-[var(--text-primary)]">{tech.pricingModel}</p>
+                  <span className="text-[10px] text-[var(--text-tertiary)]">{t.inspector.pricing}</span>
+                  <p className="font-semibold text-[var(--text-primary)]">{t.pricingModel[tech.pricingModel] ?? tech.pricingModel}</p>
                 </div>
               )}
             </div>
 
             {tech && tech.bestFor && (
               <div>
-                <h4 className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">Best for</h4>
+                <h4 className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">{t.inspector.bestFor}</h4>
                 <div className="mt-1.5 flex flex-wrap gap-1.5">
                   {tech.bestFor.map((item, idx) => (
                     <span
@@ -110,7 +108,7 @@ export const ComponentInspector: React.FC<ComponentInspectorProps> = ({
                 rel="noreferrer"
                 className="flex w-full items-center justify-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-2)] py-2 text-xs font-semibold text-[var(--text-primary)] transition hover:bg-[var(--surface-3)]"
               >
-                <span>View Documentation</span>
+                <span>{t.inspector.viewDocs}</span>
                 <ExternalLink className="h-3.5 w-3.5 text-[var(--text-tertiary)]" />
               </a>
             )}
@@ -122,7 +120,7 @@ export const ComponentInspector: React.FC<ComponentInspectorProps> = ({
             <div>
               <div className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
                 <ArrowLeft className="h-3 w-3 text-accent-500" />
-                <span>Inbound ({inboundEdges.length})</span>
+                <span>{t.inspector.inbound} ({inboundEdges.length})</span>
               </div>
               {inboundEdges.length > 0 ? (
                 <div className="mt-1.5 space-y-1.5">
@@ -142,14 +140,14 @@ export const ComponentInspector: React.FC<ComponentInspectorProps> = ({
                   })}
                 </div>
               ) : (
-                <p className="mt-1 text-[var(--text-tertiary)] italic">No incoming connections.</p>
+                <p className="mt-1 text-[var(--text-tertiary)] italic">{t.inspector.noInbound}</p>
               )}
             </div>
 
             <div>
               <div className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
                 <ArrowRight className="h-3 w-3 text-success-400" />
-                <span>Outbound ({outboundEdges.length})</span>
+                <span>{t.inspector.outbound} ({outboundEdges.length})</span>
               </div>
               {outboundEdges.length > 0 ? (
                 <div className="mt-1.5 space-y-1.5">
@@ -169,7 +167,7 @@ export const ComponentInspector: React.FC<ComponentInspectorProps> = ({
                   })}
                 </div>
               ) : (
-                <p className="mt-1 text-[var(--text-tertiary)] italic">No outbound connections.</p>
+                <p className="mt-1 text-[var(--text-tertiary)] italic">{t.inspector.noOutbound}</p>
               )}
             </div>
           </div>
@@ -180,7 +178,7 @@ export const ComponentInspector: React.FC<ComponentInspectorProps> = ({
         <div className="border-t border-[var(--border-subtle)] p-3">
           <Button variant="danger" onClick={() => onRemoveTech(tech.id)} className="w-full py-2">
             <Trash2 className="h-3.5 w-3.5" />
-            <span>Remove from Stack</span>
+            <span>{t.inspector.removeFromStack}</span>
           </Button>
         </div>
       )}

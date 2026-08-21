@@ -1,8 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import {
   ProjectConfig,
   Technology,
@@ -12,6 +7,7 @@ import {
   ArchitectureZone,
   ViewLevel,
   DeploymentZone,
+  LaneKey,
 } from "../types";
 import { TECH_BY_ID } from "./catalog";
 import { ARCHITECTURAL_RULES } from "./rules";
@@ -638,7 +634,7 @@ function layoutDeploymentView(
 
 function computeZones(nodes: ArchitectureNode[], viewLevel: ViewLevel): ArchitectureZone[] {
   if (viewLevel !== "deployment") {
-    return [];
+    return computeSystemLanes(nodes);
   }
 
   const zoneMap = new Map<DeploymentZone, ArchitectureNode[]>();
@@ -689,4 +685,67 @@ function computeZones(nodes: ArchitectureNode[], viewLevel: ViewLevel): Architec
   });
 
   return zones;
+}
+
+/**
+ * Frames each tier column from `layoutSystemView` in a labeled lane, so the
+ * diagram reads as a structured layered architecture rather than a loose
+ * scatter of cards. Mirrors the exact column classification used there.
+ */
+function computeSystemLanes(nodes: ArchitectureNode[]): ArchitectureZone[] {
+  const columns: { key: LaneKey; title: string; color: string; nodes: ArchitectureNode[] }[] = [
+    { key: "actors", title: "Actors", color: "#3a93b8", nodes: [] },
+    { key: "client", title: "Client / Frontend", color: "#c9a227", nodes: [] },
+    { key: "backend", title: "Backend & APIs", color: "#2fa876", nodes: [] },
+    { key: "data", title: "Data & Queues", color: "#d99a2b", nodes: [] },
+    { key: "external", title: "External Services", color: "#a855f7", nodes: [] },
+    { key: "infrastructure", title: "Infrastructure", color: "#6b7280", nodes: [] },
+  ];
+
+  nodes.forEach((node) => {
+    if (node.category === "actor") {
+      columns[0].nodes.push(node);
+    } else if (node.category === "frontend" || node.category === "mobile") {
+      columns[1].nodes.push(node);
+    } else if (node.category === "backend") {
+      columns[2].nodes.push(node);
+    } else if (node.category === "database" || node.category === "cache" || node.category === "messaging" || node.category === "search" || node.techId === "pinecone") {
+      columns[3].nodes.push(node);
+    } else if (["auth", "payments", "ai_llm", "storage", "communication"].includes(node.category)) {
+      columns[4].nodes.push(node);
+    } else {
+      columns[5].nodes.push(node);
+    }
+  });
+
+  const padding = 28;
+  const labelHeight = 34;
+
+  return columns
+    .filter((col) => col.nodes.length > 0)
+    .map((col) => {
+      let minX = Infinity;
+      let minY = Infinity;
+      let maxX = -Infinity;
+      let maxY = -Infinity;
+
+      col.nodes.forEach((node) => {
+        minX = Math.min(minX, node.x);
+        minY = Math.min(minY, node.y);
+        maxX = Math.max(maxX, node.x + node.width);
+        maxY = Math.max(maxY, node.y + node.height);
+      });
+
+      return {
+        id: `lane_${col.key}`,
+        title: col.title,
+        laneKey: col.key,
+        x: minX - padding,
+        y: minY - padding - labelHeight,
+        width: maxX - minX + padding * 2,
+        height: maxY - minY + padding * 2 + labelHeight,
+        color: col.color,
+        nodeIds: col.nodes.map((n) => n.id),
+      };
+    });
 }

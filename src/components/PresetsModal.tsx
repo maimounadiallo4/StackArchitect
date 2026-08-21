@@ -1,8 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import React from "react";
 import { Check, ArrowRight } from "lucide-react";
 import { StackPreset } from "../types";
@@ -12,6 +7,8 @@ import { Modal } from "./ui/Modal";
 import { Panel } from "./ui/Panel";
 import { Button } from "./ui/Button";
 import { IconTile } from "./ui/IconTile";
+import { useLanguage } from "../i18n/LanguageContext";
+import { formatTemplate } from "../i18n/translations";
 
 interface PresetsModalProps {
   isOpen: boolean;
@@ -24,6 +21,7 @@ export const PresetsModal: React.FC<PresetsModalProps> = ({
   onClose,
   onApplyPreset,
 }) => {
+  const { t } = useLanguage();
   if (!isOpen) return null;
 
   return (
@@ -31,8 +29,8 @@ export const PresetsModal: React.FC<PresetsModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       icon="LayoutTemplate"
-      title="Battle-Tested Architecture Templates"
-      subtitle="Instantly load proven, production-ready stack topologies."
+      title={t.presetsModal.title}
+      subtitle={t.presetsModal.subtitle}
       maxWidth="max-w-3xl"
       bodyClassName="bg-[var(--surface-0)]"
     >
@@ -75,7 +73,7 @@ export const PresetsModal: React.FC<PresetsModalProps> = ({
                   ))}
                   {techs.length > 7 && (
                     <span className="text-[10px] font-semibold text-[var(--text-tertiary)]">
-                      +{techs.length - 7} more
+                      {formatTemplate(t.presetsModal.more, { count: techs.length - 7 })}
                     </span>
                   )}
                 </div>
@@ -90,7 +88,7 @@ export const PresetsModal: React.FC<PresetsModalProps> = ({
                   }}
                   className="w-full py-2"
                 >
-                  <span>Load Blueprint</span>
+                  <span>{t.presetsModal.loadBlueprint}</span>
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Button>
               </div>
