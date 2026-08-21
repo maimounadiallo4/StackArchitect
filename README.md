@@ -93,8 +93,8 @@ Stack Architect asks one question at a time — what are you building, then laye
 ## 🚀 Quick Start
 
 ```bash
-git clone https://github.com/maimounadiallo4/StackPicker.git
-cd StackPicker
+git clone https://github.com/maimounadiallo4/StackArchitect.git
+cd StackArchitect
 npm install
 npm run dev
 ```

@@ -14,7 +14,7 @@ First off — thanks for taking the time to contribute. Whether it's a new techn
 
 ## Ways to contribute
 
-- 🐛 Report bugs or confusing UX via [Issues](https://github.com/maimounadiallo4/StackPicker/issues)
+- 🐛 Report bugs or confusing UX via [Issues](https://github.com/maimounadiallo4/StackArchitect/issues)
 - 🧩 Add a missing technology to the catalog (see below — this is the most common and most welcome contribution)
 - 🌍 Improve or add a translation in `src/i18n/translations.ts`
 - 🎨 Polish the UI, fix an accessibility gap, or improve responsive behavior
@@ -23,8 +23,8 @@ First off — thanks for taking the time to contribute. Whether it's a new techn
 ## Getting set up
 
 ```bash
-git clone https://github.com/<your-username>/StackPicker.git
-cd StackPicker
+git clone https://github.com/<your-username>/StackArchitect.git
+cd StackArchitect
 npm install
 npm run dev
 ```
@@ -137,7 +137,7 @@ UI chrome (buttons, labels, headings, category and project-type names) is transl
 
 ## Reporting bugs
 
-Open an [issue](https://github.com/maimounadiallo4/StackPicker/issues/new) with:
+Open an [issue](https://github.com/maimounadiallo4/StackArchitect/issues/new) with:
 
 - What you expected to happen, and what actually happened
 - Steps to reproduce
