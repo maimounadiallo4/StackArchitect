@@ -6,11 +6,6 @@ Stack Architect is a guided, step-by-step tech stack builder that turns what you
 
 Choose your stack, understand how the pieces fit together, catch architectural gaps, and export the result. No backend. No API key. No account required.
 
-[![Build](https://img.shields.io/github/actions/workflow/status/maimounadiallo4/StackPicker/ci.yml?branch=main&label=build)](https://github.com/maimounadiallo4/StackPicker/actions)
-[![License: MIT](https://img.shields.io/github/license/maimounadiallo4/StackPicker)](./LICENSE)
-[![GitHub stars](https://img.shields.io/github/stars/maimounadiallo4/StackPicker?style=social)](https://github.com/maimounadiallo4/StackPicker/stargazers)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
-
 ---
 
 ## Demo
