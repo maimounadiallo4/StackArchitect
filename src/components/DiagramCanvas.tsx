@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useMemo, useCallback } from "react"
 import { ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
 import { ArchitectureModel } from "../types";
 import { IconTile } from "./ui/IconTile";
+import { TECH_BY_ID } from "../engine/catalog";
 import { useLanguage } from "../i18n/LanguageContext";
 import { formatTemplate } from "../i18n/translations";
 import { cn } from "../lib/cn";
@@ -18,7 +19,7 @@ const DEFAULT_SCALE = 0.9;
 const DEFAULT_PAN = { x: 60, y: 50 };
 
 export const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ model, selectedNodeId, onSelectNode }) => {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(DEFAULT_SCALE);
   const [pan, setPan] = useState(DEFAULT_PAN);
@@ -317,6 +318,9 @@ export const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ model, selectedNod
           const isConnected = connectedNodeIds.has(node.id);
           const isDimmed = activeFocusId != null && !isConnected && !isSelected;
 
+          const nodeTech = node.techId ? TECH_BY_ID.get(node.techId) : null;
+          const nodeSubtitle = nodeTech ? nodeTech.tagline[locale] : node.subtitle;
+
           return (
             <div
               key={node.id}
@@ -325,7 +329,7 @@ export const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ model, selectedNod
               role="button"
               tabIndex={0}
               aria-pressed={isSelected}
-              aria-label={`${node.title} — ${node.subtitle}`}
+              aria-label={`${node.title} — ${nodeSubtitle}`}
               onMouseEnter={() => setHoveredNodeId(node.id)}
               onMouseLeave={() => setHoveredNodeId(null)}
               onClick={() => onSelectNode(node.id)}
@@ -351,7 +355,7 @@ export const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ model, selectedNod
                 <IconTile techId={node.techId} icon={node.iconName} accentColor={node.accentColor} size="md" />
                 <div className="min-w-0">
                   <h3 className="truncate text-xs font-semibold text-[var(--text-primary)] tracking-tight">{node.title}</h3>
-                  <p className="truncate text-[10px] text-[var(--text-tertiary)]">{node.subtitle}</p>
+                  <p className="truncate text-[10px] text-[var(--text-tertiary)]">{nodeSubtitle}</p>
                 </div>
               </div>
               <span className="w-fit rounded-[var(--radius-sm)] bg-[var(--surface-3)] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
@@ -377,7 +381,12 @@ export const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ model, selectedNod
       </div>
 
       <div aria-live="polite" className="sr-only">
-        {selectedNode ? formatTemplate(t.diagram.nodeSelected, { title: selectedNode.title, subtitle: selectedNode.subtitle }) : ""}
+        {selectedNode
+          ? formatTemplate(t.diagram.nodeSelected, {
+              title: selectedNode.title,
+              subtitle: (selectedNode.techId ? TECH_BY_ID.get(selectedNode.techId)?.tagline[locale] : null) ?? selectedNode.subtitle,
+            })
+          : ""}
       </div>
     </div>
   );

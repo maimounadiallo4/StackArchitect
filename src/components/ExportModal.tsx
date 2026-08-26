@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Download, Copy, Check, FileCode, FileText, Code2, Image as ImageIcon, Loader2 } from "lucide-react";
-import { ArchitectureModel } from "../types";
+import { ArchitectureModel, ValidationIssue } from "../types";
 import {
   generateMermaidDiagram,
   generateC4StructurizrDSL,
@@ -18,6 +18,7 @@ interface ExportModalProps {
   onClose: () => void;
   model: ArchitectureModel;
   darkMode: boolean;
+  issues?: ValidationIssue[];
 }
 
 const VIEW_LEVEL = "system" as const;
@@ -31,6 +32,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   onClose,
   model,
   darkMode,
+  issues = [],
 }) => {
   const { t } = useLanguage();
   const FORMAT_HINTS: Record<ExportFormat, string> = t.exportModal.hints;
@@ -63,7 +65,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       case "c4":
         return generateC4StructurizrDSL(model);
       case "markdown":
-        return generateArchitectureDocument(model);
+        return generateArchitectureDocument(model, issues);
       case "json":
         return JSON.stringify(model, null, 2);
       case "svg":
@@ -106,7 +108,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
         downloadFile(`${filenameBase}.dsl`, generateC4StructurizrDSL(model), "text/plain");
         break;
       case "markdown":
-        downloadFile(`${filenameBase}_ADR.md`, generateArchitectureDocument(model), "text/markdown");
+        downloadFile(`${filenameBase}_ADR.md`, generateArchitectureDocument(model, issues), "text/markdown");
         break;
       case "json":
         downloadFile(`${filenameBase}_model.json`, JSON.stringify(model, null, 2), "application/json");

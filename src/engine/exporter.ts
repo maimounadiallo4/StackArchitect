@@ -1,4 +1,4 @@
-import { ArchitectureModel, ViewLevel } from "../types";
+import { ArchitectureModel, ViewLevel, ValidationIssue } from "../types";
 
 export interface ExportResult {
   filename: string;
@@ -150,7 +150,7 @@ export function generateC4StructurizrDSL(model: ArchitectureModel): string {
 }
 
 // 3. Generate Architecture Decision Record (Markdown RFC)
-export function generateArchitectureDocument(model: ArchitectureModel): string {
+export function generateArchitectureDocument(model: ArchitectureModel, issues: ValidationIssue[] = []): string {
   const dateStr = new Date().toISOString().split("T")[0];
   const doc: string[] = [];
 
@@ -191,6 +191,17 @@ export function generateArchitectureDocument(model: ArchitectureModel): string {
   doc.push("```mermaid");
   doc.push(generateMermaidDiagram(model));
   doc.push("```");
+
+  const openSuggestions = issues.filter((i) => i.severity === "suggestion");
+  if (openSuggestions.length > 0) {
+    doc.push("");
+    doc.push("## 5. Open Recommendations");
+    doc.push("The following suggestions were not applied to this stack at export time:");
+    doc.push("");
+    openSuggestions.forEach((issue) => {
+      doc.push(`- **${issue.title}** — ${issue.recommendation}`);
+    });
+  }
 
   return doc.join("\n");
 }

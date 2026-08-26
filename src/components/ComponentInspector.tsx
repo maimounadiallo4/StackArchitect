@@ -22,7 +22,7 @@ export const ComponentInspector: React.FC<ComponentInspectorProps> = ({
   onRemoveTech,
   onSelectNode,
 }) => {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [activeTab, setActiveTab] = useState<"about" | "connections">("about");
 
   const node = model.nodes.find((n) => n.id === nodeId);
@@ -32,6 +32,7 @@ export const ComponentInspector: React.FC<ComponentInspectorProps> = ({
   const inboundEdges = model.edges.filter((e) => e.target === node.id);
   const outboundEdges = model.edges.filter((e) => e.source === node.id);
   const categoryLabel = t.categories[node.category as keyof typeof t.categories]?.label ?? node.category;
+  const localizedDescription = tech ? tech.description[locale] : t.actorDescriptions[node.id] ?? node.description;
 
   return (
     <div
@@ -43,7 +44,7 @@ export const ComponentInspector: React.FC<ComponentInspectorProps> = ({
           <IconTile techId={node.techId} icon={node.iconName} accentColor={node.accentColor} size="lg" />
           <div className="min-w-0">
             <h2 className="truncate font-display text-sm font-semibold text-[var(--text-primary)] tracking-tight">{node.title}</h2>
-            <p className="truncate text-[11px] text-[var(--text-tertiary)]">{node.subtitle}</p>
+            <p className="truncate text-[11px] text-[var(--text-tertiary)]">{tech ? tech.tagline[locale] : node.subtitle}</p>
           </div>
         </div>
 
@@ -70,7 +71,7 @@ export const ComponentInspector: React.FC<ComponentInspectorProps> = ({
           <>
             <div>
               <h3 className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">{t.inspector.role}</h3>
-              <p className="mt-1 leading-relaxed text-[var(--text-secondary)]">{node.description}</p>
+              <p className="mt-1 leading-relaxed text-[var(--text-secondary)]">{localizedDescription}</p>
             </div>
 
             <div className="grid grid-cols-2 gap-2.5 rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--surface-2)] p-3">

@@ -73,13 +73,18 @@ export type ProtocolType =
   | "SDK / Internal RPC"
   | "OpenTelemetry / gRPC";
 
+export interface LocalizedText {
+  en: string;
+  fr: string;
+}
+
 export interface Technology {
   id: string;
   name: string;
   category: TechCategory;
   tier: ArchitectureTier;
-  description: string;
-  tagline: string;
+  description: LocalizedText;
+  tagline: LocalizedText;
   badgeColor: string; // Tailwind color or hex
   accentColor: string;
   iconName: string; // lucide icon identifier
@@ -171,6 +176,8 @@ export interface ValidationIssue {
   message: string;
   affectedTechIds: string[];
   recommendation: string;
+  /** Interpolation values for the localized copy in translations.ts (see `validationMessages`). */
+  values?: Record<string, string>;
   autoFixAction?: {
     type: "add_tech" | "remove_tech" | "replace_tech";
     techId: string;

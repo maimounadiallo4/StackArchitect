@@ -30,10 +30,12 @@ export const StackPicker: React.FC<StackPickerProps> = ({
   const filteredTechs = useMemo(() => {
     return TECH_CATALOG.filter((tech) => {
       const matchesCategory = selectedCategory === "all" || tech.category === selectedCategory;
+      const query = searchQuery.trim().toLowerCase();
       const matchesSearch =
-        searchQuery.trim() === "" ||
-        tech.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        tech.tagline.toLowerCase().includes(searchQuery.toLowerCase());
+        query === "" ||
+        tech.name.toLowerCase().includes(query) ||
+        tech.tagline.en.toLowerCase().includes(query) ||
+        tech.tagline.fr.toLowerCase().includes(query);
       return matchesCategory && matchesSearch;
     });
   }, [selectedCategory, searchQuery]);

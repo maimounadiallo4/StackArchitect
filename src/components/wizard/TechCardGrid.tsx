@@ -12,7 +12,7 @@ interface TechCardGridProps {
 }
 
 export const TechCardGrid: React.FC<TechCardGridProps> = ({ techs, selectedSet, onToggle }) => {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   return (
     <div className="@container">
     <div className="grid grid-cols-1 gap-3 @sm:grid-cols-2 @xl:grid-cols-3">
@@ -50,7 +50,7 @@ export const TechCardGrid: React.FC<TechCardGridProps> = ({ techs, selectedSet, 
 
             <div>
               <h4 className="font-display text-sm font-semibold text-[var(--text-primary)]">{tech.name}</h4>
-              <p className="mt-0.5 text-xs leading-relaxed text-[var(--text-tertiary)]">{tech.tagline}</p>
+              <p className="mt-0.5 text-xs leading-relaxed text-[var(--text-tertiary)]">{tech.tagline[locale]}</p>
             </div>
 
             <div className="mt-auto flex items-center justify-between border-t border-[var(--border-subtle)] pt-2.5 text-[10px] text-[var(--text-tertiary)]">

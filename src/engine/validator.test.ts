@@ -34,4 +34,27 @@ describe("validateArchitecture", () => {
     expect(authSuggestion?.severity).toBe("suggestion");
     expect(authSuggestion?.autoFixAction?.techId).toBe("clerk");
   });
+
+  it("has localized copy in both locales for every issue id it can produce", async () => {
+    const { translations } = await import("../i18n/translations");
+    // Exercise a broad mix of project types/stacks to surface as many issue ids as possible.
+    const scenarios: [ProjectConfig, Technology[]][] = [
+      [makeProject({ type: "saas" }), techs(["react"])],
+      [makeProject({ type: "saas" }), techs(["react", "fastapi", "postgresql", "clerk", "auth0"])],
+      [makeProject({ type: "ecommerce" }), techs(["react"])],
+      [makeProject({ type: "ai_app" }), techs(["react", "fastapi", "gemini"])],
+      [makeProject({ type: "saas", expectedTraffic: "enterprise" }), techs(["react", "fastapi", "postgresql"])],
+      [makeProject({ type: "saas" }), techs(["react", "redis"])],
+    ];
+
+    const seenIds = new Set<string>();
+    for (const [project, stack] of scenarios) {
+      for (const issue of validateArchitecture(project, stack)) {
+        seenIds.add(issue.id);
+        expect(translations.en.validationMessages[issue.id], `missing en copy for ${issue.id}`).toBeDefined();
+        expect(translations.fr.validationMessages[issue.id], `missing fr copy for ${issue.id}`).toBeDefined();
+      }
+    }
+    expect(seenIds.size).toBeGreaterThan(5);
+  });
 });

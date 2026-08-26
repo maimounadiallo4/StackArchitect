@@ -37,6 +37,8 @@ export const StepRail: React.FC<StepRailProps> = ({ steps, activeIndex, onJump }
               type="button"
               disabled={!clickable}
               onClick={() => clickable && onJump?.(idx)}
+              aria-current={isActive ? "step" : undefined}
+              aria-label={step.label}
               className={cn(
                 "flex shrink-0 items-center gap-1.5 rounded-full border px-2 py-1 text-[11px] font-medium transition sm:px-2.5 sm:py-1.5 sm:text-xs",
                 isActive

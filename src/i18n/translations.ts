@@ -73,6 +73,87 @@ const en = {
     nodeSelected: "Selected: {title} — {subtitle}",
   },
 
+  actorDescriptions: {
+    actor_web_user: "End user navigating web client via desktop or mobile browser.",
+    actor_mobile_user: "Mobile app user interacting with native gesture UI.",
+  } as Record<string, string>,
+
+  validationMessages: {
+    err_payments_no_backend: {
+      title: "Missing Server for Payment Webhooks",
+      message:
+        "Payment providers like Stripe or Lemon Squeezy require a backend API to safely store API secrets, create checkout sessions, and receive asynchronous payment webhooks.",
+      recommendation: "Add a backend service like FastAPI, NestJS, or Next.js to handle payment webhooks securely.",
+      actionLabel: "Add FastAPI Backend",
+    },
+    err_spa_direct_db: {
+      title: "Direct Client-to-Database Connection Anti-Pattern",
+      message:
+        "Connecting a browser SPA (such as React or Vue) directly to a relational database (PostgreSQL/MySQL) leaks database credentials to the public internet.",
+      recommendation:
+        "Introduce an API backend (e.g. FastAPI, NestJS) or switch to a Backend-as-a-Service with Row Level Security (e.g. Supabase).",
+      actionLabel: "Add NestJS API Gateway",
+    },
+    warn_redis_no_backend: {
+      title: "Unused In-Memory Cache Tier",
+      message:
+        "Redis / Dragonfly is selected, but no backend service exists to handle cache read/write operations or session state.",
+      recommendation: "Attach a backend service or remove the cache layer if building a static/edge frontend.",
+      actionLabel: "Add FastAPI Service",
+    },
+    warn_saas_no_db: {
+      title: "Missing Primary Database for Transactional SaaS",
+      message:
+        'Projects of type "{projectType}" require a reliable persistent database for user records, orders, subscriptions, and transactions.',
+      recommendation: "Add PostgreSQL or Supabase for relational data consistency.",
+      actionLabel: "Add PostgreSQL Database",
+    },
+    warn_duplicate_auth: {
+      title: "Multiple Authentication Providers Detected",
+      message:
+        "You have selected multiple auth providers ({authNames}). Running multiple auth systems simultaneously causes identity fragmentation unless using an enterprise federation bridge.",
+      recommendation: "Choose one primary identity provider (e.g. {primaryAuthName}) to simplify user session management.",
+    },
+    sug_saas_no_auth: {
+      title: "Authentication Recommended for SaaS",
+      message: "Most SaaS applications require user accounts, organization workspaces, and role-based access control.",
+      recommendation: "Add Clerk or Supabase Auth to enable user onboarding, JWT sessions, and organization management.",
+      actionLabel: "Add Clerk Auth",
+    },
+    sug_ai_vector_db: {
+      title: "Vector Database for RAG & Semantic Retrieval",
+      message:
+        "For AI applications requiring document knowledge, chatbots, or contextual search, a dedicated vector index ensures high-speed similarity search.",
+      recommendation: "Add Pinecone or pgvector in PostgreSQL for RAG document embeddings.",
+      actionLabel: "Add Pinecone Vector DB",
+    },
+    sug_ecom_storage: {
+      title: "Object Storage for Product Assets & Media",
+      message: "E-commerce catalogs generate heavy image uploads for merchandise, thumbnails, and invoices.",
+      recommendation: "Add AWS S3 or Cloudflare R2 for fast media asset hosting and zero-egress delivery.",
+      actionLabel: "Add Cloudflare R2 Storage",
+    },
+    sug_missing_monitoring: {
+      title: "Missing Observability for High-Traffic Stack",
+      message: "High-throughput systems benefit from real-time error tracking and APM tracing before launch.",
+      recommendation: "Integrate Sentry for crash monitoring and Datadog for APM metrics.",
+      actionLabel: "Add Sentry APM",
+    },
+    sug_high_traffic_cache: {
+      title: "Add In-Memory Cache Tier for Scalability",
+      message:
+        "Under high concurrency, caching database queries and session states in Redis reduces database CPU pressure by up to 80%.",
+      recommendation: "Add Redis Cache to buffer frequent database reads.",
+      actionLabel: "Add Redis Cache",
+    },
+    sug_cicd_pipeline: {
+      title: "Automate Build & Deployment Pipeline",
+      message: "Setting up continuous integration ensures code quality and automatic cloud deployments.",
+      recommendation: "Add GitHub Actions and Docker containerization.",
+      actionLabel: "Add GitHub Actions",
+    },
+  } as Record<string, { title: string; message: string; recommendation: string; actionLabel?: string }>,
+
   lanes: {
     actors: "Actors",
     client: "Client / Frontend",
@@ -112,6 +193,10 @@ const en = {
     expand: "Expand Details",
     collapse: "Collapse",
     recommendation: "Recommendation:",
+    autoFixAdded: "{tech} added to the stack.",
+    autoFixRemoved: "{tech} removed from the stack.",
+    undo: "Undo",
+    dismiss: "Dismiss",
   },
 
   projectConfigModal: {
@@ -280,6 +365,88 @@ const fr: typeof en = {
     nodeSelected: "Sélectionné : {title} — {subtitle}",
   },
 
+  actorDescriptions: {
+    actor_web_user: "Utilisateur final naviguant via un client web depuis un ordinateur ou un mobile.",
+    actor_mobile_user: "Utilisateur de l'application mobile interagissant avec l'interface tactile native.",
+  } as Record<string, string>,
+
+  validationMessages: {
+    err_payments_no_backend: {
+      title: "Serveur manquant pour les webhooks de paiement",
+      message:
+        "Les fournisseurs de paiement comme Stripe ou Lemon Squeezy nécessitent une API backend pour stocker en sécurité les clés API, créer des sessions de paiement et recevoir les webhooks de paiement asynchrones.",
+      recommendation: "Ajoutez un service backend comme FastAPI, NestJS ou Next.js pour gérer les webhooks de paiement en toute sécurité.",
+      actionLabel: "Ajouter un backend FastAPI",
+    },
+    err_spa_direct_db: {
+      title: "Connexion directe client-base de données (anti-pattern)",
+      message:
+        "Connecter une SPA navigateur (comme React ou Vue) directement à une base de données relationnelle (PostgreSQL/MySQL) expose les identifiants de la base sur Internet.",
+      recommendation:
+        "Introduisez une API backend (ex. FastAPI, NestJS) ou passez à un Backend-as-a-Service avec sécurité au niveau des lignes (ex. Supabase).",
+      actionLabel: "Ajouter une passerelle API NestJS",
+    },
+    warn_redis_no_backend: {
+      title: "Niveau de cache en mémoire inutilisé",
+      message:
+        "Redis / Dragonfly est sélectionné, mais aucun service backend n'existe pour gérer les opérations de lecture/écriture du cache ou l'état de session.",
+      recommendation: "Associez un service backend ou retirez la couche de cache si vous construisez un frontend statique/edge.",
+      actionLabel: "Ajouter un service FastAPI",
+    },
+    warn_saas_no_db: {
+      title: "Base de données principale manquante pour un SaaS transactionnel",
+      message:
+        'Les projets de type « {projectType} » nécessitent une base de données persistante fiable pour les comptes utilisateurs, commandes, abonnements et transactions.',
+      recommendation: "Ajoutez PostgreSQL ou Supabase pour garantir la cohérence des données relationnelles.",
+      actionLabel: "Ajouter une base PostgreSQL",
+    },
+    warn_duplicate_auth: {
+      title: "Plusieurs fournisseurs d'authentification détectés",
+      message:
+        "Vous avez sélectionné plusieurs fournisseurs d'authentification ({authNames}). Faire fonctionner plusieurs systèmes d'authentification simultanément fragmente l'identité, sauf en utilisant un pont de fédération d'entreprise.",
+      recommendation: "Choisissez un fournisseur d'identité principal (ex. {primaryAuthName}) pour simplifier la gestion des sessions utilisateur.",
+    },
+    sug_saas_no_auth: {
+      title: "Authentification recommandée pour un SaaS",
+      message:
+        "La plupart des applications SaaS nécessitent des comptes utilisateurs, des espaces de travail organisationnels et un contrôle d'accès basé sur les rôles.",
+      recommendation: "Ajoutez Clerk ou Supabase Auth pour permettre l'onboarding utilisateur, les sessions JWT et la gestion des organisations.",
+      actionLabel: "Ajouter Clerk Auth",
+    },
+    sug_ai_vector_db: {
+      title: "Base de données vectorielle pour RAG & recherche sémantique",
+      message:
+        "Pour les applications IA nécessitant une base de connaissances documentaire, des chatbots ou une recherche contextuelle, un index vectoriel dédié garantit une recherche par similarité à haute vitesse.",
+      recommendation: "Ajoutez Pinecone ou pgvector dans PostgreSQL pour les embeddings de documents RAG.",
+      actionLabel: "Ajouter Pinecone Vector DB",
+    },
+    sug_ecom_storage: {
+      title: "Stockage objet pour les ressources produits & médias",
+      message: "Les catalogues e-commerce génèrent de nombreux téléversements d'images pour les produits, vignettes et factures.",
+      recommendation: "Ajoutez AWS S3 ou Cloudflare R2 pour un hébergement rapide des médias avec livraison sans frais de sortie.",
+      actionLabel: "Ajouter le stockage Cloudflare R2",
+    },
+    sug_missing_monitoring: {
+      title: "Observabilité manquante pour une stack à fort trafic",
+      message: "Les systèmes à haut débit bénéficient d'un suivi des erreurs en temps réel et d'un tracing APM avant le lancement.",
+      recommendation: "Intégrez Sentry pour la supervision des plantages et Datadog pour les métriques APM.",
+      actionLabel: "Ajouter Sentry APM",
+    },
+    sug_high_traffic_cache: {
+      title: "Ajouter un niveau de cache en mémoire pour la scalabilité",
+      message:
+        "Sous forte concurrence, la mise en cache des requêtes de base de données et des états de session dans Redis réduit la pression CPU de la base de données jusqu'à 80 %.",
+      recommendation: "Ajoutez un cache Redis pour absorber les lectures fréquentes de la base de données.",
+      actionLabel: "Ajouter un cache Redis",
+    },
+    sug_cicd_pipeline: {
+      title: "Automatiser le pipeline de build & déploiement",
+      message: "Mettre en place l'intégration continue garantit la qualité du code et des déploiements cloud automatiques.",
+      recommendation: "Ajoutez GitHub Actions et la conteneurisation Docker.",
+      actionLabel: "Ajouter GitHub Actions",
+    },
+  } as Record<string, { title: string; message: string; recommendation: string; actionLabel?: string }>,
+
   lanes: {
     actors: "Acteurs",
     client: "Client / Frontend",
@@ -319,6 +486,10 @@ const fr: typeof en = {
     expand: "Voir les détails",
     collapse: "Réduire",
     recommendation: "Recommandation :",
+    autoFixAdded: "{tech} ajouté à la stack.",
+    autoFixRemoved: "{tech} retiré de la stack.",
+    undo: "Annuler",
+    dismiss: "Ignorer",
   },
 
   projectConfigModal: {

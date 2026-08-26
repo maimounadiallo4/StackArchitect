@@ -15,8 +15,10 @@ import { generateArchitectureModel } from "./engine/architectureEngine";
 import { validateArchitecture } from "./engine/validator";
 import { Layers, SlidersHorizontal } from "lucide-react";
 import { Sheet } from "./components/ui/Sheet";
+import { Toast, ToastState } from "./components/ui/Toast";
 import { useMediaQuery } from "./lib/useMediaQuery";
 import { useLanguage } from "./i18n/LanguageContext";
+import { formatTemplate } from "./i18n/translations";
 
 type AppPhase = "wizard" | "diagram";
 
@@ -46,6 +48,7 @@ export default function App() {
 
   const [selectedTechIds, setSelectedTechIds] = useState<string[]>([]);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [toast, setToast] = useState<ToastState | null>(null);
 
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [isPresetsModalOpen, setIsPresetsModalOpen] = useState(false);
@@ -84,12 +87,25 @@ export default function App() {
   }, []);
 
   const handleAutoFix = useCallback((action: NonNullable<ValidationIssue["autoFixAction"]>) => {
-    if (action.type === "add_tech" && action.techId) {
-      setSelectedTechIds((prev) => (prev.includes(action.techId!) ? prev : [...prev, action.techId!]));
-    } else if (action.type === "remove_tech" && action.techId) {
-      setSelectedTechIds((prev) => prev.filter((id) => id !== action.techId));
+    const techId = action.techId;
+    const techName = TECH_BY_ID.get(techId)?.name ?? techId;
+
+    if (action.type === "add_tech" && techId) {
+      setSelectedTechIds((prev) => (prev.includes(techId) ? prev : [...prev, techId]));
+      setToast({
+        message: formatTemplate(t.validation.autoFixAdded, { tech: techName }),
+        undoLabel: t.validation.undo,
+        onUndo: () => setSelectedTechIds((prev) => prev.filter((id) => id !== techId)),
+      });
+    } else if (action.type === "remove_tech" && techId) {
+      setSelectedTechIds((prev) => prev.filter((id) => id !== techId));
+      setToast({
+        message: formatTemplate(t.validation.autoFixRemoved, { tech: techName }),
+        undoLabel: t.validation.undo,
+        onUndo: () => setSelectedTechIds((prev) => (prev.includes(techId) ? prev : [...prev, techId])),
+      });
     }
-  }, []);
+  }, [t]);
 
   const handleApplyPreset = useCallback((preset: StackPreset) => {
     setProject((prev) => ({ ...prev, name: preset.name, type: preset.projectType, description: preset.description }));
@@ -265,7 +281,10 @@ export default function App() {
         onClose={() => setIsExportModalOpen(false)}
         model={model}
         darkMode={darkMode}
+        issues={validationIssues}
       />
+
+      <Toast toast={toast} onDismiss={() => setToast(null)} closeLabel={t.validation.dismiss} />
     </div>
   );
 }

@@ -11,7 +11,22 @@ import {
 import { ValidationIssue } from "../types";
 import { Button } from "./ui/Button";
 import { useLanguage } from "../i18n/LanguageContext";
+import { formatTemplate } from "../i18n/translations";
 import { cn } from "../lib/cn";
+
+function localizeIssue(issue: ValidationIssue, validationMessages: Record<string, { title: string; message: string; recommendation: string; actionLabel?: string }>) {
+  const localized = validationMessages[issue.id];
+  if (!localized) {
+    return { title: issue.title, message: issue.message, recommendation: issue.recommendation, actionLabel: issue.autoFixAction?.label };
+  }
+  const values = issue.values ?? {};
+  return {
+    title: formatTemplate(localized.title, values),
+    message: formatTemplate(localized.message, values),
+    recommendation: formatTemplate(localized.recommendation, values),
+    actionLabel: localized.actionLabel ?? issue.autoFixAction?.label,
+  };
+}
 
 interface ValidationPanelProps {
   issues: ValidationIssue[];
@@ -110,6 +125,8 @@ export const ValidationPanel: React.FC<ValidationPanelProps> = ({
               badgeClass = "bg-warning-500/10 text-warning-400 border border-warning-500/30";
             }
 
+            const localized = localizeIssue(issue, t.validationMessages);
+
             return (
               <div
                 key={issue.id}
@@ -120,17 +137,17 @@ export const ValidationPanel: React.FC<ValidationPanelProps> = ({
                   <div>
                     <div className="flex items-center gap-2">
                       <h3 className="font-semibold text-[var(--text-primary)]">
-                        {issue.title}
+                        {localized.title}
                       </h3>
                       <span className={cn("rounded px-1.5 py-0.2 text-[9px] font-bold uppercase", badgeClass)}>
                         {severityLabel[issue.severity]}
                       </span>
                     </div>
                     <p className="mt-1 leading-relaxed text-[var(--text-secondary)]">
-                      {issue.message}
+                      {localized.message}
                     </p>
                     <p className="mt-1.5 font-medium text-[var(--text-primary)]">
-                      <span className="text-[var(--text-tertiary)]">{t.validation.recommendation}</span> {issue.recommendation}
+                      <span className="text-[var(--text-tertiary)]">{t.validation.recommendation}</span> {localized.recommendation}
                     </p>
                   </div>
                 </div>
@@ -143,7 +160,7 @@ export const ValidationPanel: React.FC<ValidationPanelProps> = ({
                     className="shrink-0"
                   >
                     <Plus className="h-3.5 w-3.5 stroke-[3]" />
-                    <span>{issue.autoFixAction.label}</span>
+                    <span>{localized.actionLabel}</span>
                   </Button>
                 )}
               </div>
