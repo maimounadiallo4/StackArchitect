@@ -1,8 +1,12 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
-import { ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
+import { ZoomIn, ZoomOut, Maximize2, LayoutGrid, List, Info } from "lucide-react";
 import { ArchitectureModel } from "../types";
 import { IconTile } from "./ui/IconTile";
+import { TECH_BY_ID } from "../engine/catalog";
 import { useLanguage } from "../i18n/LanguageContext";
+import { formatTemplate } from "../i18n/translations";
+import { DiagramLegend } from "./DiagramLegend";
+import { DiagramListView } from "./DiagramListView";
 import { cn } from "../lib/cn";
 
 interface DiagramCanvasProps {
@@ -17,7 +21,7 @@ const DEFAULT_SCALE = 0.9;
 const DEFAULT_PAN = { x: 60, y: 50 };
 
 export const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ model, selectedNodeId, onSelectNode }) => {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(DEFAULT_SCALE);
   const [pan, setPan] = useState(DEFAULT_PAN);
@@ -38,6 +42,13 @@ export const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ model, selectedNod
   }, [activeFocusId, model.edges]);
 
   const nodeMap = useMemo(() => new Map(model.nodes.map((n) => [n.id, n])), [model.nodes]);
+
+  const actorCount = useMemo(() => model.nodes.filter((n) => n.category === "actor").length, [model.nodes]);
+  const technicalCount = model.nodes.length - actorCount;
+  const selectedNode = selectedNodeId ? nodeMap.get(selectedNodeId) : null;
+
+  const [viewMode, setViewMode] = useState<"diagram" | "list">("diagram");
+  const [showLegend, setShowLegend] = useState(false);
 
   const startPan = useCallback((clientX: number, clientY: number) => {
     setIsPanning(true);
@@ -169,6 +180,60 @@ export const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ model, selectedNod
     );
   }
 
+  const viewToggle = (
+    <div className="absolute left-3 top-3 z-20 flex items-center gap-1 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-1)]/95 p-1 shadow-[var(--elevation-3)] backdrop-blur-md sm:left-4 sm:top-4">
+      <button
+        onClick={() => setViewMode("diagram")}
+        aria-pressed={viewMode === "diagram"}
+        title={t.diagram.diagramView}
+        aria-label={t.diagram.diagramView}
+        className={cn(
+          "rounded-[var(--radius-sm)] p-1.5 transition",
+          viewMode === "diagram" ? "bg-accent-500 text-[var(--text-on-accent)]" : "text-[var(--text-tertiary)] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)]"
+        )}
+      >
+        <LayoutGrid className="h-4 w-4" />
+      </button>
+      <button
+        onClick={() => setViewMode("list")}
+        aria-pressed={viewMode === "list"}
+        title={t.diagram.listView}
+        aria-label={t.diagram.listView}
+        className={cn(
+          "rounded-[var(--radius-sm)] p-1.5 transition",
+          viewMode === "list" ? "bg-accent-500 text-[var(--text-on-accent)]" : "text-[var(--text-tertiary)] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)]"
+        )}
+      >
+        <List className="h-4 w-4" />
+      </button>
+      {viewMode === "diagram" && (
+        <button
+          onClick={() => setShowLegend((v) => !v)}
+          aria-pressed={showLegend}
+          title={t.diagram.legend}
+          aria-label={t.diagram.legend}
+          className={cn(
+            "rounded-[var(--radius-sm)] p-1.5 transition",
+            showLegend ? "bg-accent-500 text-[var(--text-on-accent)]" : "text-[var(--text-tertiary)] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)]"
+          )}
+        >
+          <Info className="h-4 w-4" />
+        </button>
+      )}
+    </div>
+  );
+
+  if (viewMode === "list") {
+    return (
+      <div className="relative flex flex-1 flex-col overflow-hidden">
+        {viewToggle}
+        <div className="flex-1 overflow-hidden pt-14">
+          <DiagramListView model={model} selectedNodeId={selectedNodeId} onSelectNode={onSelectNode} t={t} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       ref={containerRef}
@@ -181,12 +246,15 @@ export const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ model, selectedNod
       onMouseLeave={handleMouseUp}
       onWheel={handleWheel}
     >
+      {viewToggle}
+      {showLegend && <DiagramLegend zones={model.zones} lanes={t.lanes} />}
       {/* Floating zoom controls */}
       <div className="absolute right-3 top-3 z-20 flex items-center gap-1 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-1)]/95 p-1 shadow-[var(--elevation-3)] backdrop-blur-md sm:right-4 sm:top-4">
         <button
           onClick={() => handleZoom(0.15)}
           className="rounded-[var(--radius-sm)] p-1.5 text-[var(--text-tertiary)] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] transition"
           title={t.diagram.zoomIn}
+          aria-label={t.diagram.zoomIn}
         >
           <ZoomIn className="h-4 w-4" />
         </button>
@@ -194,6 +262,7 @@ export const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ model, selectedNod
           onClick={() => handleZoom(-0.15)}
           className="rounded-[var(--radius-sm)] p-1.5 text-[var(--text-tertiary)] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] transition"
           title={t.diagram.zoomOut}
+          aria-label={t.diagram.zoomOut}
         >
           <ZoomOut className="h-4 w-4" />
         </button>
@@ -201,6 +270,7 @@ export const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ model, selectedNod
           onClick={handleResetView}
           className="rounded-[var(--radius-sm)] p-1.5 text-[var(--text-tertiary)] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] transition"
           title={t.diagram.resetView}
+          aria-label={t.diagram.resetView}
         >
           <Maximize2 className="h-4 w-4" />
         </button>
@@ -309,17 +379,30 @@ export const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ model, selectedNod
           const isConnected = connectedNodeIds.has(node.id);
           const isDimmed = activeFocusId != null && !isConnected && !isSelected;
 
+          const nodeTech = node.techId ? TECH_BY_ID.get(node.techId) : null;
+          const nodeSubtitle = nodeTech ? nodeTech.tagline[locale] : node.subtitle;
+
           return (
             <div
               key={node.id}
               id={`diagram-node-${node.id}`}
               data-node-id={node.id}
+              role="button"
+              tabIndex={0}
+              aria-pressed={isSelected}
+              aria-label={`${node.title} — ${nodeSubtitle}`}
               onMouseEnter={() => setHoveredNodeId(node.id)}
               onMouseLeave={() => setHoveredNodeId(null)}
               onClick={() => onSelectNode(node.id)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onSelectNode(node.id);
+                }
+              }}
               style={{ left: `${node.x}px`, top: `${node.y}px`, width: `${node.width}px`, height: `${node.height}px` }}
               className={cn(
-                "diagram-node-card group absolute flex flex-col justify-center gap-2.5 rounded-[var(--radius-lg)] border p-3.5 shadow-[var(--elevation-1)] transition-all cursor-pointer",
+                "diagram-node-card group absolute flex flex-col justify-center gap-2.5 rounded-[var(--radius-lg)] border p-3.5 shadow-[var(--elevation-1)] transition-all cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-500",
                 isDimmed
                   ? "opacity-25 scale-95"
                   : isSelected
@@ -333,7 +416,7 @@ export const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ model, selectedNod
                 <IconTile techId={node.techId} icon={node.iconName} accentColor={node.accentColor} size="md" />
                 <div className="min-w-0">
                   <h3 className="truncate text-xs font-semibold text-[var(--text-primary)] tracking-tight">{node.title}</h3>
-                  <p className="truncate text-[10px] text-[var(--text-tertiary)]">{node.subtitle}</p>
+                  <p className="truncate text-[10px] text-[var(--text-tertiary)]">{nodeSubtitle}</p>
                 </div>
               </div>
               <span className="w-fit rounded-[var(--radius-sm)] bg-[var(--surface-3)] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
@@ -345,9 +428,26 @@ export const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ model, selectedNod
       </div>
 
       <div className="absolute bottom-3 left-3 z-20 flex items-center gap-2.5 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-1)]/95 px-3.5 py-2 text-xs text-[var(--text-secondary)] shadow-[var(--elevation-3)] backdrop-blur-md sm:bottom-4 sm:left-4">
-        <span className="font-semibold text-[var(--text-primary)]">{model.nodes.length} {t.diagram.components}</span>
+        <span className="font-semibold text-[var(--text-primary)]">{technicalCount} {t.diagram.components}</span>
+        {actorCount > 0 && (
+          <>
+            <span className="text-[var(--text-tertiary)]">+</span>
+            <span className="font-semibold text-[var(--text-primary)]">
+              {actorCount} {actorCount === 1 ? t.diagram.actorSingular : t.diagram.actorPlural}
+            </span>
+          </>
+        )}
         <span className="text-[var(--text-tertiary)]">·</span>
         <span className="font-medium text-accent-400">{t.complexity[model.stats.estimatedComplexity] ?? model.stats.estimatedComplexity}</span>
+      </div>
+
+      <div aria-live="polite" className="sr-only">
+        {selectedNode
+          ? formatTemplate(t.diagram.nodeSelected, {
+              title: selectedNode.title,
+              subtitle: (selectedNode.techId ? TECH_BY_ID.get(selectedNode.techId)?.tagline[locale] : null) ?? selectedNode.subtitle,
+            })
+          : ""}
       </div>
     </div>
   );

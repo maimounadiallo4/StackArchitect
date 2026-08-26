@@ -83,10 +83,11 @@ export const StackWizard: React.FC<StackWizardProps> = ({
       <div className="flex items-center justify-between gap-3 border-b border-[var(--border-subtle)] bg-[var(--surface-1)] px-4 py-3 sm:px-6">
         <div className="flex items-center gap-2.5">
           <BrandMark size={32} className="h-8 w-8" />
-          <span className="font-display hidden text-sm font-semibold sm:inline">{t.brand}</span>
+          <h1 className="sr-only">{t.brand}</h1>
+          <span aria-hidden="true" className="font-display hidden text-sm font-semibold sm:inline">{t.brand}</span>
         </div>
 
-        <StepRail steps={railSteps} activeIndex={stepIndex} onJump={setStepIndex} />
+        <StepRail steps={railSteps} activeIndex={stepIndex} onJump={setStepIndex} ariaLabel={t.wizard.stepsNav} />
 
         <div className="flex items-center gap-1.5">
           {hasExistingStack && onCancel && (
@@ -150,27 +151,34 @@ export const StackWizard: React.FC<StackWizardProps> = ({
       </main>
 
       {/* Footer nav */}
-      <div className="flex items-center justify-between border-t border-[var(--border-subtle)] bg-[var(--surface-1)] px-4 py-3.5 sm:px-6">
-        <Button variant="ghost" onClick={goBack} disabled={stepIndex === 0}>
-          <ArrowLeft className="h-3.5 w-3.5" />
-          <span>{t.wizard.back}</span>
-        </Button>
-
-        <span className="hidden text-xs text-[var(--text-tertiary)] sm:inline">
-          {formatTemplate(t.wizard.stepOf, { current: stepIndex + 1, total: steps.length })}
-        </span>
-
-        {isLast ? (
-          <Button variant="primary" onClick={onComplete}>
-            <Sparkles className="h-3.5 w-3.5" />
-            <span>{t.wizard.generate}</span>
-          </Button>
-        ) : (
-          <Button variant={nextIsSkip ? "secondary" : "primary"} onClick={goNext} disabled={!canProceed}>
-            <span>{nextIsSkip ? t.wizard.skip : t.wizard.continueLabel}</span>
-            {nextIsSkip ? <SkipForward className="h-3.5 w-3.5" /> : <ArrowRight className="h-3.5 w-3.5" />}
-          </Button>
+      <div className="border-t border-[var(--border-subtle)] bg-[var(--surface-1)] px-4 py-3.5 sm:px-6">
+        {!canProceed && (
+          <p role="status" aria-live="polite" className="mb-2 text-right text-xs font-medium text-warning-400 sm:text-left">
+            {t.wizard.selectAtLeastOne}
+          </p>
         )}
+        <div className="flex items-center justify-between">
+          <Button variant="ghost" onClick={goBack} disabled={stepIndex === 0}>
+            <ArrowLeft className="h-3.5 w-3.5" />
+            <span>{t.wizard.back}</span>
+          </Button>
+
+          <span className="hidden text-xs text-[var(--text-tertiary)] sm:inline">
+            {formatTemplate(t.wizard.stepOf, { current: stepIndex + 1, total: steps.length })}
+          </span>
+
+          {isLast ? (
+            <Button variant="primary" onClick={onComplete}>
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>{t.wizard.generate}</span>
+            </Button>
+          ) : (
+            <Button variant={nextIsSkip ? "secondary" : "primary"} onClick={goNext} disabled={!canProceed}>
+              <span>{nextIsSkip ? t.wizard.skip : t.wizard.continueLabel}</span>
+              {nextIsSkip ? <SkipForward className="h-3.5 w-3.5" /> : <ArrowRight className="h-3.5 w-3.5" />}
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

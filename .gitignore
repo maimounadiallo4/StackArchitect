@@ -5,3 +5,6 @@ coverage/
 .DS_Store
 *.log
 .claude/
+test-results/
+playwright-report/
+blob-report/

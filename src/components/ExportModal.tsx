@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
-import { Download, Copy, Check, FileCode, FileText, Code2, Image as ImageIcon, Loader2 } from "lucide-react";
-import { ArchitectureModel } from "../types";
+import { Download, Copy, Check, FileCode, FileText, Code2, Image as ImageIcon, Loader2, Link2 } from "lucide-react";
+import { ArchitectureModel, ValidationIssue } from "../types";
 import {
   generateMermaidDiagram,
   generateC4StructurizrDSL,
@@ -8,6 +8,7 @@ import {
   downloadFile,
 } from "../engine/exporter";
 import { generateDiagramSVG, svgToPngBlob, downloadBlob } from "../engine/diagramImage";
+import { encodeShareLink } from "../lib/shareLink";
 import { Modal } from "./ui/Modal";
 import { Button } from "./ui/Button";
 import { useLanguage } from "../i18n/LanguageContext";
@@ -18,6 +19,7 @@ interface ExportModalProps {
   onClose: () => void;
   model: ArchitectureModel;
   darkMode: boolean;
+  issues?: ValidationIssue[];
 }
 
 const VIEW_LEVEL = "system" as const;
@@ -31,12 +33,21 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   onClose,
   model,
   darkMode,
+  issues = [],
 }) => {
   const { t } = useLanguage();
   const FORMAT_HINTS: Record<ExportFormat, string> = t.exportModal.hints;
   const [selectedFormat, setSelectedFormat] = useState<ExportFormat>("mermaid");
   const [copied, setCopied] = useState(false);
   const [isBusy, setIsBusy] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
+
+  const handleCopyShareLink = () => {
+    const link = encodeShareLink({ project: model.project, selectedTechIds: model.selectedTechs.map((t) => t.id) });
+    navigator.clipboard.writeText(link);
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 2000);
+  };
 
   const FORMATS: { id: ExportFormat; label: string; icon: React.ReactNode }[] = [
     { id: "mermaid", label: "Mermaid.js", icon: <FileCode className="h-3.5 w-3.5" /> },
@@ -63,7 +74,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       case "c4":
         return generateC4StructurizrDSL(model);
       case "markdown":
-        return generateArchitectureDocument(model);
+        return generateArchitectureDocument(model, issues);
       case "json":
         return JSON.stringify(model, null, 2);
       case "svg":
@@ -106,7 +117,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
         downloadFile(`${filenameBase}.dsl`, generateC4StructurizrDSL(model), "text/plain");
         break;
       case "markdown":
-        downloadFile(`${filenameBase}_ADR.md`, generateArchitectureDocument(model), "text/markdown");
+        downloadFile(`${filenameBase}_ADR.md`, generateArchitectureDocument(model, issues), "text/markdown");
         break;
       case "json":
         downloadFile(`${filenameBase}_model.json`, JSON.stringify(model, null, 2), "application/json");
@@ -143,6 +154,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({
           <div className="text-xs text-[var(--text-tertiary)]">{FORMAT_HINTS[selectedFormat]}</div>
 
           <div className="flex items-center gap-2">
+            <Button variant="secondary" onClick={handleCopyShareLink}>
+              {linkCopied ? <Check className="h-3.5 w-3.5 text-success-400" /> : <Link2 className="h-3.5 w-3.5" />}
+              <span>{linkCopied ? t.exportModal.copied : t.exportModal.copyLink}</span>
+            </Button>
+
             {(selectedFormat !== "png" || canCopyImages) && (
               <Button variant="secondary" onClick={handleCopy} disabled={isBusy}>
                 {copied ? <Check className="h-3.5 w-3.5 text-success-400" /> : <Copy className="h-3.5 w-3.5" />}
@@ -159,7 +175,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       }
     >
       {/* Format Selector Pills */}
-      <div className="flex gap-2 overflow-x-auto border-b border-[var(--border-subtle)] px-4 py-2 text-xs font-medium no-scrollbar sm:px-5">
+      <div
+        className="flex gap-2 overflow-x-auto border-b border-[var(--border-subtle)] px-4 py-2 text-xs font-medium no-scrollbar sm:px-5"
+        tabIndex={0}
+        role="group"
+        aria-label={t.exportModal.title}
+      >
         {FORMATS.map((fmt) => (
           <button
             key={fmt.id}

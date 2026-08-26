@@ -28,7 +28,11 @@ export const LayerStep: React.FC<LayerStepProps> = ({ category, required, select
         <div>
           <div className="flex items-center gap-2">
             <h2 className="font-display text-xl font-semibold tracking-tight text-[var(--text-primary)] sm:text-2xl">{meta.label}</h2>
-            {!required && (
+            {required ? (
+              <span className="rounded-[var(--radius-sm)] border border-accent-500/40 bg-accent-500/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-accent-500">
+                {t.layer.required}
+              </span>
+            ) : (
               <span className="rounded-[var(--radius-sm)] border border-[var(--border-default)] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--text-tertiary)]">
                 {t.layer.optional}
               </span>

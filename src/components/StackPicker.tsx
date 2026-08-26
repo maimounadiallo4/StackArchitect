@@ -1,13 +1,16 @@
 import React, { useState, useMemo } from "react";
 import { Search, X, Layers } from "lucide-react";
-import { TechCategory } from "../types";
+import { ProjectConfig, TechCategory } from "../types";
 import { TECH_CATALOG, CATEGORY_METADATA } from "../engine/catalog";
+import { getWizardLayers } from "../engine/projectTypes";
 import { IconHelper } from "./IconHelper";
 import { TechCardGrid } from "./wizard/TechCardGrid";
 import { useLanguage } from "../i18n/LanguageContext";
+import { formatTemplate } from "../i18n/translations";
 import { cn } from "../lib/cn";
 
 interface StackPickerProps {
+  project: ProjectConfig;
   selectedTechIds: string[];
   onToggleTech: (techId: string) => void;
   onClearCategory: (category: TechCategory) => void;
@@ -16,6 +19,7 @@ interface StackPickerProps {
 }
 
 export const StackPicker: React.FC<StackPickerProps> = ({
+  project,
   selectedTechIds,
   onToggleTech,
   onClearCategory,
@@ -27,16 +31,32 @@ export const StackPicker: React.FC<StackPickerProps> = ({
 
   const categories = useMemo(() => Object.keys(CATEGORY_METADATA) as TechCategory[], []);
 
+  const recommendedCategories = useMemo(
+    () => new Set(getWizardLayers(project.type).filter((l) => l.required).map((l) => l.category)),
+    [project.type]
+  );
+
   const filteredTechs = useMemo(() => {
     return TECH_CATALOG.filter((tech) => {
       const matchesCategory = selectedCategory === "all" || tech.category === selectedCategory;
+      const query = searchQuery.trim().toLowerCase();
       const matchesSearch =
-        searchQuery.trim() === "" ||
-        tech.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        tech.tagline.toLowerCase().includes(searchQuery.toLowerCase());
+        query === "" ||
+        tech.name.toLowerCase().includes(query) ||
+        tech.tagline.en.toLowerCase().includes(query) ||
+        tech.tagline.fr.toLowerCase().includes(query);
       return matchesCategory && matchesSearch;
     });
   }, [selectedCategory, searchQuery]);
+
+  const isGrouped = selectedCategory === "all" && searchQuery.trim() === "";
+  const recommendedTechs = useMemo(
+    () => (isGrouped ? filteredTechs.filter((tech) => recommendedCategories.has(tech.category)) : []),
+    [isGrouped, filteredTechs, recommendedCategories]
+  );
+  const otherTechs = isGrouped
+    ? filteredTechs.filter((tech) => !recommendedCategories.has(tech.category))
+    : filteredTechs;
 
   const selectedSet = useMemo(() => new Set(selectedTechIds), [selectedTechIds]);
 
@@ -54,11 +74,12 @@ export const StackPicker: React.FC<StackPickerProps> = ({
         <div className="mb-2.5 flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
             <Layers className="h-3.5 w-3.5 text-accent-500" />
-            <span>{t.stackPicker.title}</span>
+            <h2>{t.stackPicker.title}</h2>
           </div>
           {onRequestClose && (
             <button
               onClick={onRequestClose}
+              aria-label={t.stackPicker.closeLabel}
               className="rounded-[var(--radius-sm)] p-1 text-[var(--text-tertiary)] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)]"
             >
               <X className="h-4 w-4" />
@@ -67,17 +88,26 @@ export const StackPicker: React.FC<StackPickerProps> = ({
         </div>
 
         <div className="relative mb-2.5">
+          <label htmlFor="tech-search-input" className="sr-only">{t.stackPicker.searchPlaceholder}</label>
           <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-[var(--text-tertiary)]" />
           <input
+            id="tech-search-input"
+            name="tech-search"
             type="text"
             placeholder={t.stackPicker.searchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Escape" && searchQuery) {
+                e.stopPropagation();
+                setSearchQuery("");
+              }
+            }}
             className="w-full rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-2)] py-2 pl-9 pr-3 text-xs text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] transition focus:border-accent-500 focus:outline-none focus:ring-1 focus:ring-accent-500"
           />
         </div>
 
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar" tabIndex={0} role="group" aria-label={t.stackPicker.title}>
           <button
             onClick={() => setSelectedCategory("all")}
             className={cn(
@@ -133,7 +163,30 @@ export const StackPicker: React.FC<StackPickerProps> = ({
           </button>
         )}
 
-        <TechCardGrid techs={filteredTechs} selectedSet={selectedSet} onToggle={onToggleTech} />
+        <p className="mb-2.5 text-[11px] text-[var(--text-tertiary)]" aria-live="polite">
+          {formatTemplate(filteredTechs.length === 1 ? t.stackPicker.resultCountOne : t.stackPicker.resultCountOther, {
+            count: filteredTechs.length,
+          })}
+        </p>
+
+        {isGrouped && recommendedTechs.length > 0 ? (
+          <>
+            <h3 className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-accent-500">
+              {t.stackPicker.recommended}
+            </h3>
+            <TechCardGrid techs={recommendedTechs} selectedSet={selectedSet} onToggle={onToggleTech} />
+            {otherTechs.length > 0 && (
+              <>
+                <h3 className="mb-2 mt-4 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
+                  {t.stackPicker.allTechnologies}
+                </h3>
+                <TechCardGrid techs={otherTechs} selectedSet={selectedSet} onToggle={onToggleTech} />
+              </>
+            )}
+          </>
+        ) : (
+          <TechCardGrid techs={filteredTechs} selectedSet={selectedSet} onToggle={onToggleTech} />
+        )}
 
         {filteredTechs.length === 0 && (
           <div className="py-12 text-center text-xs text-[var(--text-tertiary)]">

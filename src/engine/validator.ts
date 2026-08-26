@@ -97,6 +97,7 @@ export function validateArchitecture(
         `Projects of type "${project.type.toUpperCase()}" require a reliable persistent database for user records, orders, subscriptions, and transactions.`,
       affectedTechIds: [],
       recommendation: "Add PostgreSQL or Supabase for relational data consistency.",
+      values: { projectType: project.type.toUpperCase() },
       autoFixAction: {
         type: "add_tech",
         techId: "postgresql",
@@ -115,6 +116,7 @@ export function validateArchitecture(
       message: `You have selected multiple auth providers (${authTechs.map((t) => t.name).join(", ")}). Running multiple auth systems simultaneously causes identity fragmentation unless using an enterprise federation bridge.`,
       affectedTechIds: authTechs.map((t) => t.id),
       recommendation: `Choose one primary identity provider (e.g. ${authTechs[0].name}) to simplify user session management.`,
+      values: { authNames: authTechs.map((t) => t.name).join(", "), primaryAuthName: authTechs[0].name },
     });
   }
 

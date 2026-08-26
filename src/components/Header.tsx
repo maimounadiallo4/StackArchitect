@@ -4,6 +4,7 @@ import {
   FolderKanban,
   SlidersHorizontal,
   AlertTriangle,
+  Lightbulb,
   Moon,
   Sun,
   CheckCircle2,
@@ -44,9 +45,11 @@ export const Header: React.FC<HeaderProps> = ({
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const errorCount = issues.filter((i) => i.severity === "error").length;
   const warningCount = issues.filter((i) => i.severity === "warning").length;
+  const suggestionCount = issues.filter((i) => i.severity === "suggestion").length;
 
-  const statusTone: "danger" | "warning" | "success" = errorCount > 0 ? "danger" : warningCount > 0 ? "warning" : "success";
-  const statusCount = errorCount > 0 ? errorCount : warningCount > 0 ? warningCount : 0;
+  const statusTone: "danger" | "warning" | "info" | "success" =
+    errorCount > 0 ? "danger" : warningCount > 0 ? "warning" : suggestionCount > 0 ? "info" : "success";
+  const statusCount = errorCount > 0 ? errorCount : warningCount > 0 ? warningCount : suggestionCount > 0 ? suggestionCount : 0;
 
   return (
     <header
@@ -57,13 +60,15 @@ export const Header: React.FC<HeaderProps> = ({
         <BrandMark size={36} className="h-9 w-9 shadow-[var(--elevation-2)]" />
 
         <div className="min-w-0">
-          <button
-            onClick={onOpenProjectModal}
-            className="group flex min-w-0 items-center gap-1.5 font-display font-semibold tracking-tight text-[var(--text-primary)] transition hover:text-accent-400"
-          >
-            <span className="truncate text-sm font-semibold sm:text-base">{project.name || "—"}</span>
-            <SlidersHorizontal className="h-3 w-3 shrink-0 text-[var(--text-tertiary)] opacity-60 group-hover:opacity-100 group-hover:text-accent-400" />
-          </button>
+          <h1 className="min-w-0 font-display font-semibold tracking-tight text-[var(--text-primary)]">
+            <button
+              onClick={onOpenProjectModal}
+              className="group flex min-w-0 items-center gap-1.5 transition hover:text-accent-400"
+            >
+              <span className="truncate text-sm font-semibold sm:text-base">{project.name || "—"}</span>
+              <SlidersHorizontal className="h-3 w-3 shrink-0 text-[var(--text-tertiary)] opacity-60 group-hover:opacity-100 group-hover:text-accent-400" />
+            </button>
+          </h1>
           <div className="flex items-center gap-1.5 text-[11px] text-[var(--text-tertiary)]">
             <span>{t.projectTypes[project.type].label}</span>
             <span>·</span>
@@ -83,12 +88,23 @@ export const Header: React.FC<HeaderProps> = ({
             "hidden items-center gap-1.5 rounded-[var(--radius-md)] border px-2.5 py-1.5 text-xs font-medium sm:flex",
             statusTone === "danger" && "border-danger-500/30 bg-danger-500/10 text-danger-400",
             statusTone === "warning" && "border-warning-500/30 bg-warning-500/10 text-warning-400",
+            statusTone === "info" && "border-accent-500/30 bg-accent-500/10 text-accent-400",
             statusTone === "success" && "border-success-500/30 bg-success-500/10 text-success-400"
           )}
         >
-          {statusTone === "success" ? <CheckCircle2 className="h-3.5 w-3.5" /> : <AlertTriangle className="h-3.5 w-3.5" />}
+          {statusTone === "success" ? (
+            <CheckCircle2 className="h-3.5 w-3.5" />
+          ) : statusTone === "info" ? (
+            <Lightbulb className="h-3.5 w-3.5" />
+          ) : (
+            <AlertTriangle className="h-3.5 w-3.5" />
+          )}
           <span className="hidden lg:inline">
-            {statusTone === "success" ? t.header.stackValid : `${statusCount} ${statusTone === "danger" ? t.header.errors : t.header.warnings}`}
+            {statusTone === "success"
+              ? t.header.stackValid
+              : statusTone === "info"
+              ? t.header.stackReviewable
+              : `${statusCount} ${statusTone === "danger" ? t.header.errors : t.header.warnings}`}
           </span>
           {statusTone !== "success" && <span className="lg:hidden">{statusCount}</span>}
         </div>
@@ -105,12 +121,24 @@ export const Header: React.FC<HeaderProps> = ({
           <span>{t.header.export}</span>
         </Button>
 
-        <Button variant="secondary" size="icon" onClick={onToggleDarkMode} title={darkMode ? t.header.lightTheme : t.header.darkTheme}>
+        <Button
+          variant="secondary"
+          size="icon"
+          onClick={onToggleDarkMode}
+          title={darkMode ? t.header.lightTheme : t.header.darkTheme}
+          aria-label={darkMode ? t.header.lightTheme : t.header.darkTheme}
+        >
           {darkMode ? <Sun className="h-3.5 w-3.5 text-warning-400" /> : <Moon className="h-3.5 w-3.5" />}
         </Button>
 
         <div className="relative md:hidden">
-          <Button variant="secondary" size="icon" onClick={() => setIsMoreMenuOpen((v) => !v)}>
+          <Button
+            variant="secondary"
+            size="icon"
+            onClick={() => setIsMoreMenuOpen((v) => !v)}
+            aria-label={t.header.moreOptions}
+            aria-expanded={isMoreMenuOpen}
+          >
             <MoreHorizontal className="h-4 w-4" />
           </Button>
 
