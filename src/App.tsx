@@ -19,8 +19,19 @@ import { Toast, ToastState } from "./components/ui/Toast";
 import { useMediaQuery } from "./lib/useMediaQuery";
 import { useLanguage } from "./i18n/LanguageContext";
 import { formatTemplate } from "./i18n/translations";
+import { decodeShareStateFromLocation } from "./lib/shareLink";
 
 type AppPhase = "wizard" | "diagram";
+
+const DEFAULT_PROJECT: ProjectConfig = {
+  id: "local",
+  name: "",
+  type: "saas",
+  description: "",
+  expectedTraffic: "medium",
+  teamExperience: "intermediate",
+  budgetConstraint: "moderate",
+};
 
 export default function App() {
   const { t } = useLanguage();
@@ -34,19 +45,20 @@ export default function App() {
     }
   }, [darkMode]);
 
-  const [appPhase, setAppPhase] = useState<AppPhase>("wizard");
+  const sharedState = useMemo(() => decodeShareStateFromLocation(), []);
 
-  const [project, setProject] = useState<ProjectConfig>({
-    id: "local",
-    name: "",
-    type: "saas",
-    description: "",
-    expectedTraffic: "medium",
-    teamExperience: "intermediate",
-    budgetConstraint: "moderate",
-  });
+  useEffect(() => {
+    if (sharedState) {
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const [selectedTechIds, setSelectedTechIds] = useState<string[]>([]);
+  const [appPhase, setAppPhase] = useState<AppPhase>(sharedState ? "diagram" : "wizard");
+
+  const [project, setProject] = useState<ProjectConfig>(sharedState?.project ?? DEFAULT_PROJECT);
+
+  const [selectedTechIds, setSelectedTechIds] = useState<string[]>(sharedState?.selectedTechIds ?? []);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastState | null>(null);
 
@@ -172,6 +184,7 @@ export default function App() {
           }`}
         >
           <StackPicker
+            project={project}
             selectedTechIds={selectedTechIds}
             onToggleTech={handleToggleTech}
             onClearCategory={handleClearCategory}
@@ -191,6 +204,7 @@ export default function App() {
         {!isDesktop && (
           <Sheet isOpen={isMobileStackSheetOpen} onClose={() => setIsMobileStackSheetOpen(false)} side="left">
             <StackPicker
+              project={project}
               selectedTechIds={selectedTechIds}
               onToggleTech={handleToggleTech}
               onClearCategory={handleClearCategory}

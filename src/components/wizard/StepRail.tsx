@@ -13,11 +13,12 @@ interface StepRailProps {
   steps: RailStep[];
   activeIndex: number;
   onJump?: (index: number) => void;
+  ariaLabel: string;
 }
 
-export const StepRail: React.FC<StepRailProps> = ({ steps, activeIndex, onJump }) => {
+export const StepRail: React.FC<StepRailProps> = ({ steps, activeIndex, onJump, ariaLabel }) => {
   return (
-    <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
+    <div className="flex items-center gap-1 overflow-x-auto no-scrollbar" tabIndex={0} role="group" aria-label={ariaLabel}>
       {steps.map((step, idx) => {
         const isDone = idx < activeIndex;
         const isActive = idx === activeIndex;

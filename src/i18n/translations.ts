@@ -33,6 +33,7 @@ const en = {
     extrasRailLabel: "Extras",
     projectRailLabel: "Project",
     selectAtLeastOne: "Select at least one option to continue.",
+    stepsNav: "Steps",
   },
 
   projectType: {
@@ -60,6 +61,10 @@ const en = {
     clearLayer: "Clear this layer",
     noResults: "No components found",
     closeLabel: "Close component library",
+    resultCountOne: "{count} result",
+    resultCountOther: "{count} results",
+    recommended: "Recommended for this project",
+    allTechnologies: "All technologies",
   },
 
   diagram: {
@@ -254,6 +259,7 @@ const en = {
       png: "Raster image — ready to drop into docs, slides, or chat.",
     },
     copyImage: "Copy Image",
+    copyLink: "Copy Shareable Link",
   },
 
   pricingModel: {
@@ -334,6 +340,7 @@ const fr: typeof en = {
     extrasRailLabel: "Options",
     projectRailLabel: "Projet",
     selectAtLeastOne: "Sélectionnez au moins une option pour continuer.",
+    stepsNav: "Étapes",
   },
 
   projectType: {
@@ -361,6 +368,10 @@ const fr: typeof en = {
     clearLayer: "Vider cette couche",
     noResults: "Aucun composant trouvé",
     closeLabel: "Fermer la bibliothèque de composants",
+    resultCountOne: "{count} résultat",
+    resultCountOther: "{count} résultats",
+    recommended: "Recommandé pour ce projet",
+    allTechnologies: "Toutes les technologies",
   },
 
   diagram: {
@@ -556,6 +567,7 @@ const fr: typeof en = {
       png: "Image matricielle — prête pour vos docs, slides ou messages.",
     },
     copyImage: "Copier l'image",
+    copyLink: "Copier le lien de partage",
   },
 
   pricingModel: {

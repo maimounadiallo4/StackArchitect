@@ -87,7 +87,7 @@ export const StackWizard: React.FC<StackWizardProps> = ({
           <span aria-hidden="true" className="font-display hidden text-sm font-semibold sm:inline">{t.brand}</span>
         </div>
 
-        <StepRail steps={railSteps} activeIndex={stepIndex} onJump={setStepIndex} />
+        <StepRail steps={railSteps} activeIndex={stepIndex} onJump={setStepIndex} ariaLabel={t.wizard.stepsNav} />
 
         <div className="flex items-center gap-1.5">
           {hasExistingStack && onCancel && (

@@ -4,6 +4,7 @@ import {
   FolderKanban,
   SlidersHorizontal,
   AlertTriangle,
+  Lightbulb,
   Moon,
   Sun,
   CheckCircle2,
@@ -91,7 +92,13 @@ export const Header: React.FC<HeaderProps> = ({
             statusTone === "success" && "border-success-500/30 bg-success-500/10 text-success-400"
           )}
         >
-          {statusTone === "success" ? <CheckCircle2 className="h-3.5 w-3.5" /> : <AlertTriangle className="h-3.5 w-3.5" />}
+          {statusTone === "success" ? (
+            <CheckCircle2 className="h-3.5 w-3.5" />
+          ) : statusTone === "info" ? (
+            <Lightbulb className="h-3.5 w-3.5" />
+          ) : (
+            <AlertTriangle className="h-3.5 w-3.5" />
+          )}
           <span className="hidden lg:inline">
             {statusTone === "success"
               ? t.header.stackValid
