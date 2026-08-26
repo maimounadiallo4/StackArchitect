@@ -51,14 +51,17 @@ export const ValidationPanel: React.FC<ValidationPanelProps> = ({
       className="border-t border-[var(--border-subtle)] bg-[var(--surface-1)] text-[var(--text-primary)]"
     >
       {/* Header bar */}
-      <div
+      <button
+        type="button"
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex cursor-pointer items-center justify-between px-4 py-2.5 text-xs transition hover:bg-[var(--surface-2)]"
+        aria-expanded={isExpanded}
+        aria-controls="validation-issues-list"
+        className="flex w-full items-center justify-between px-4 py-2.5 text-left text-xs transition hover:bg-[var(--surface-2)]"
       >
         <div className="flex items-center gap-3">
           <div className="hidden items-center gap-1.5 font-semibold text-[var(--text-primary)] sm:flex">
             <ShieldCheck className="h-3.5 w-3.5 text-accent-500" />
-            <span>{t.validation.diagnostics}</span>
+            <h2>{t.validation.diagnostics}</h2>
           </div>
 
           <div className="flex items-center gap-1.5">
@@ -87,11 +90,11 @@ export const ValidationPanel: React.FC<ValidationPanelProps> = ({
           <span className="hidden text-[11px] font-medium sm:inline">{isExpanded ? t.validation.collapse : t.validation.expand}</span>
           {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
         </div>
-      </div>
+      </button>
 
       {/* Expanded Issue Cards List */}
       {isExpanded && (
-        <div className="max-h-72 overflow-y-auto border-t border-[var(--border-subtle)] p-4 space-y-3 bg-[var(--surface-0)]">
+        <div id="validation-issues-list" className="max-h-72 overflow-y-auto border-t border-[var(--border-subtle)] p-4 space-y-3 bg-[var(--surface-0)]">
           {issues.map((issue) => {
             let toneClass = "border-[var(--border-subtle)] bg-[var(--surface-2)]";
             let icon = <Lightbulb className="h-4 w-4 text-accent-400" />;
@@ -116,9 +119,9 @@ export const ValidationPanel: React.FC<ValidationPanelProps> = ({
                   <div className="mt-0.5 shrink-0">{icon}</div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h4 className="font-semibold text-[var(--text-primary)]">
+                      <h3 className="font-semibold text-[var(--text-primary)]">
                         {issue.title}
-                      </h4>
+                      </h3>
                       <span className={cn("rounded px-1.5 py-0.2 text-[9px] font-bold uppercase", badgeClass)}>
                         {severityLabel[issue.severity]}
                       </span>

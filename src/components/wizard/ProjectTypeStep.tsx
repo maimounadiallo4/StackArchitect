@@ -33,8 +33,10 @@ export const ProjectTypeStep: React.FC<ProjectTypeStepProps> = ({
       </p>
 
       <div className="mt-6 max-w-sm">
-        <label className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">{t.projectType.nameLabel}</label>
+        <label htmlFor="wizard-project-name" className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">{t.projectType.nameLabel}</label>
         <input
+          id="wizard-project-name"
+          name="wizard-project-name"
           type="text"
           value={projectName}
           onChange={(e) => onChangeName(e.target.value)}

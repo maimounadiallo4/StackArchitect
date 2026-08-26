@@ -54,11 +54,12 @@ export const StackPicker: React.FC<StackPickerProps> = ({
         <div className="mb-2.5 flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
             <Layers className="h-3.5 w-3.5 text-accent-500" />
-            <span>{t.stackPicker.title}</span>
+            <h2>{t.stackPicker.title}</h2>
           </div>
           {onRequestClose && (
             <button
               onClick={onRequestClose}
+              aria-label={t.stackPicker.closeLabel}
               className="rounded-[var(--radius-sm)] p-1 text-[var(--text-tertiary)] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)]"
             >
               <X className="h-4 w-4" />
@@ -67,12 +68,21 @@ export const StackPicker: React.FC<StackPickerProps> = ({
         </div>
 
         <div className="relative mb-2.5">
+          <label htmlFor="tech-search-input" className="sr-only">{t.stackPicker.searchPlaceholder}</label>
           <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-[var(--text-tertiary)]" />
           <input
+            id="tech-search-input"
+            name="tech-search"
             type="text"
             placeholder={t.stackPicker.searchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Escape" && searchQuery) {
+                e.stopPropagation();
+                setSearchQuery("");
+              }
+            }}
             className="w-full rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-2)] py-2 pl-9 pr-3 text-xs text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] transition focus:border-accent-500 focus:outline-none focus:ring-1 focus:ring-accent-500"
           />
         </div>

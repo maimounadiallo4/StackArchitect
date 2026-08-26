@@ -13,12 +13,14 @@ const en = {
     export: "Export",
     exportTitle: "Export Diagram & ADR",
     stackValid: "Stack Valid",
+    stackReviewable: "Suggestions Available",
     errors: "Errors",
     warnings: "Warnings",
     components: "components",
     lightTheme: "Switch to light theme",
     darkTheme: "Switch to dark theme",
     language: "Language",
+    moreOptions: "More options",
   },
 
   wizard: {
@@ -30,6 +32,7 @@ const en = {
     generate: "Generate Architecture",
     extrasRailLabel: "Extras",
     projectRailLabel: "Project",
+    selectAtLeastOne: "Select at least one option to continue.",
   },
 
   projectType: {
@@ -42,6 +45,7 @@ const en = {
 
   layer: {
     optional: "Optional",
+    required: "Required",
   },
 
   extras: {
@@ -55,6 +59,7 @@ const en = {
     all: "All",
     clearLayer: "Clear this layer",
     noResults: "No components found",
+    closeLabel: "Close component library",
   },
 
   diagram: {
@@ -62,7 +67,10 @@ const en = {
     zoomIn: "Zoom In",
     zoomOut: "Zoom Out",
     resetView: "Center & Reset",
-    components: "components",
+    components: "technical components",
+    actorSingular: "actor",
+    actorPlural: "actors",
+    nodeSelected: "Selected: {title} — {subtitle}",
   },
 
   lanes: {
@@ -76,6 +84,7 @@ const en = {
 
   inspector: {
     panelTitle: "Inspector",
+    closeLabel: "Close inspector",
     about: "About",
     connections: "Connections",
     role: "Role",
@@ -211,12 +220,14 @@ const fr: typeof en = {
     export: "Exporter",
     exportTitle: "Exporter le diagramme et l'ADR",
     stackValid: "Stack valide",
+    stackReviewable: "Suggestions disponibles",
     errors: "Erreurs",
     warnings: "Avertissements",
     components: "composants",
     lightTheme: "Passer au thème clair",
     darkTheme: "Passer au thème sombre",
     language: "Langue",
+    moreOptions: "Plus d'options",
   },
 
   wizard: {
@@ -228,6 +239,7 @@ const fr: typeof en = {
     generate: "Générer l'architecture",
     extrasRailLabel: "Options",
     projectRailLabel: "Projet",
+    selectAtLeastOne: "Sélectionnez au moins une option pour continuer.",
   },
 
   projectType: {
@@ -240,6 +252,7 @@ const fr: typeof en = {
 
   layer: {
     optional: "Optionnel",
+    required: "Obligatoire",
   },
 
   extras: {
@@ -253,6 +266,7 @@ const fr: typeof en = {
     all: "Tout",
     clearLayer: "Vider cette couche",
     noResults: "Aucun composant trouvé",
+    closeLabel: "Fermer la bibliothèque de composants",
   },
 
   diagram: {
@@ -260,7 +274,10 @@ const fr: typeof en = {
     zoomIn: "Zoomer",
     zoomOut: "Dézoomer",
     resetView: "Centrer et réinitialiser",
-    components: "composants",
+    components: "composants techniques",
+    actorSingular: "acteur",
+    actorPlural: "acteurs",
+    nodeSelected: "Sélectionné : {title} — {subtitle}",
   },
 
   lanes: {
@@ -274,6 +291,7 @@ const fr: typeof en = {
 
   inspector: {
     panelTitle: "Inspecteur",
+    closeLabel: "Fermer l'inspecteur",
     about: "Détails",
     connections: "Connexions",
     role: "Rôle",

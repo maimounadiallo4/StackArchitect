@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useMemo } from "react";
+import React, { createContext, useContext, useState, useCallback, useMemo, useEffect } from "react";
 import { Locale, Translations, translations } from "./translations";
 
 interface LanguageContextValue {
@@ -34,6 +34,10 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const toggleLocale = useCallback(() => {
     setLocale(locale === "fr" ? "en" : "fr");
   }, [locale, setLocale]);
+
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
 
   const value = useMemo(
     () => ({ locale, setLocale, toggleLocale, t: translations[locale] }),

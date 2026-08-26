@@ -3,6 +3,7 @@ import { ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
 import { ArchitectureModel } from "../types";
 import { IconTile } from "./ui/IconTile";
 import { useLanguage } from "../i18n/LanguageContext";
+import { formatTemplate } from "../i18n/translations";
 import { cn } from "../lib/cn";
 
 interface DiagramCanvasProps {
@@ -38,6 +39,10 @@ export const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ model, selectedNod
   }, [activeFocusId, model.edges]);
 
   const nodeMap = useMemo(() => new Map(model.nodes.map((n) => [n.id, n])), [model.nodes]);
+
+  const actorCount = useMemo(() => model.nodes.filter((n) => n.category === "actor").length, [model.nodes]);
+  const technicalCount = model.nodes.length - actorCount;
+  const selectedNode = selectedNodeId ? nodeMap.get(selectedNodeId) : null;
 
   const startPan = useCallback((clientX: number, clientY: number) => {
     setIsPanning(true);
@@ -187,6 +192,7 @@ export const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ model, selectedNod
           onClick={() => handleZoom(0.15)}
           className="rounded-[var(--radius-sm)] p-1.5 text-[var(--text-tertiary)] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] transition"
           title={t.diagram.zoomIn}
+          aria-label={t.diagram.zoomIn}
         >
           <ZoomIn className="h-4 w-4" />
         </button>
@@ -194,6 +200,7 @@ export const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ model, selectedNod
           onClick={() => handleZoom(-0.15)}
           className="rounded-[var(--radius-sm)] p-1.5 text-[var(--text-tertiary)] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] transition"
           title={t.diagram.zoomOut}
+          aria-label={t.diagram.zoomOut}
         >
           <ZoomOut className="h-4 w-4" />
         </button>
@@ -201,6 +208,7 @@ export const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ model, selectedNod
           onClick={handleResetView}
           className="rounded-[var(--radius-sm)] p-1.5 text-[var(--text-tertiary)] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] transition"
           title={t.diagram.resetView}
+          aria-label={t.diagram.resetView}
         >
           <Maximize2 className="h-4 w-4" />
         </button>
@@ -314,12 +322,22 @@ export const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ model, selectedNod
               key={node.id}
               id={`diagram-node-${node.id}`}
               data-node-id={node.id}
+              role="button"
+              tabIndex={0}
+              aria-pressed={isSelected}
+              aria-label={`${node.title} — ${node.subtitle}`}
               onMouseEnter={() => setHoveredNodeId(node.id)}
               onMouseLeave={() => setHoveredNodeId(null)}
               onClick={() => onSelectNode(node.id)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onSelectNode(node.id);
+                }
+              }}
               style={{ left: `${node.x}px`, top: `${node.y}px`, width: `${node.width}px`, height: `${node.height}px` }}
               className={cn(
-                "diagram-node-card group absolute flex flex-col justify-center gap-2.5 rounded-[var(--radius-lg)] border p-3.5 shadow-[var(--elevation-1)] transition-all cursor-pointer",
+                "diagram-node-card group absolute flex flex-col justify-center gap-2.5 rounded-[var(--radius-lg)] border p-3.5 shadow-[var(--elevation-1)] transition-all cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-500",
                 isDimmed
                   ? "opacity-25 scale-95"
                   : isSelected
@@ -345,9 +363,21 @@ export const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ model, selectedNod
       </div>
 
       <div className="absolute bottom-3 left-3 z-20 flex items-center gap-2.5 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-1)]/95 px-3.5 py-2 text-xs text-[var(--text-secondary)] shadow-[var(--elevation-3)] backdrop-blur-md sm:bottom-4 sm:left-4">
-        <span className="font-semibold text-[var(--text-primary)]">{model.nodes.length} {t.diagram.components}</span>
+        <span className="font-semibold text-[var(--text-primary)]">{technicalCount} {t.diagram.components}</span>
+        {actorCount > 0 && (
+          <>
+            <span className="text-[var(--text-tertiary)]">+</span>
+            <span className="font-semibold text-[var(--text-primary)]">
+              {actorCount} {actorCount === 1 ? t.diagram.actorSingular : t.diagram.actorPlural}
+            </span>
+          </>
+        )}
         <span className="text-[var(--text-tertiary)]">·</span>
         <span className="font-medium text-accent-400">{t.complexity[model.stats.estimatedComplexity] ?? model.stats.estimatedComplexity}</span>
+      </div>
+
+      <div aria-live="polite" className="sr-only">
+        {selectedNode ? formatTemplate(t.diagram.nodeSelected, { title: selectedNode.title, subtitle: selectedNode.subtitle }) : ""}
       </div>
     </div>
   );

@@ -51,8 +51,10 @@ export const ProjectConfigModal: React.FC<ProjectConfigModalProps> = ({
     >
       <form onSubmit={handleSubmit} className="space-y-4 p-4 text-xs sm:p-5">
         <div>
-          <label className="block font-semibold text-[var(--text-secondary)]">{t.projectConfigModal.nameLabel}</label>
+          <label htmlFor="project-config-name" className="block font-semibold text-[var(--text-secondary)]">{t.projectConfigModal.nameLabel}</label>
           <input
+            id="project-config-name"
+            name="project-name"
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -62,8 +64,10 @@ export const ProjectConfigModal: React.FC<ProjectConfigModalProps> = ({
         </div>
 
         <div>
-          <label className="block font-semibold text-[var(--text-secondary)]">{t.projectConfigModal.descriptionLabel}</label>
+          <label htmlFor="project-config-description" className="block font-semibold text-[var(--text-secondary)]">{t.projectConfigModal.descriptionLabel}</label>
           <textarea
+            id="project-config-description"
+            name="project-description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder={t.projectConfigModal.descriptionPlaceholder}
@@ -74,8 +78,10 @@ export const ProjectConfigModal: React.FC<ProjectConfigModalProps> = ({
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
-            <label className="block font-semibold text-[var(--text-secondary)]">{t.projectConfigModal.trafficLabel}</label>
+            <label htmlFor="project-config-traffic" className="block font-semibold text-[var(--text-secondary)]">{t.projectConfigModal.trafficLabel}</label>
             <select
+              id="project-config-traffic"
+              name="project-traffic"
               value={expectedTraffic}
               onChange={(e) => setExpectedTraffic(e.target.value as any)}
               className={inputClass}
@@ -88,8 +94,10 @@ export const ProjectConfigModal: React.FC<ProjectConfigModalProps> = ({
           </div>
 
           <div>
-            <label className="block font-semibold text-[var(--text-secondary)]">{t.projectConfigModal.budgetLabel}</label>
+            <label htmlFor="project-config-budget" className="block font-semibold text-[var(--text-secondary)]">{t.projectConfigModal.budgetLabel}</label>
             <select
+              id="project-config-budget"
+              name="project-budget"
               value={budgetConstraint}
               onChange={(e) => setBudgetConstraint(e.target.value as any)}
               className={inputClass}

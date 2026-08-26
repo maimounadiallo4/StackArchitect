@@ -42,13 +42,14 @@ export const ComponentInspector: React.FC<ComponentInspectorProps> = ({
         <div className="flex min-w-0 items-center gap-2.5">
           <IconTile techId={node.techId} icon={node.iconName} accentColor={node.accentColor} size="lg" />
           <div className="min-w-0">
-            <h3 className="truncate font-display text-sm font-semibold text-[var(--text-primary)] tracking-tight">{node.title}</h3>
+            <h2 className="truncate font-display text-sm font-semibold text-[var(--text-primary)] tracking-tight">{node.title}</h2>
             <p className="truncate text-[11px] text-[var(--text-tertiary)]">{node.subtitle}</p>
           </div>
         </div>
 
         <button
           onClick={onClose}
+          aria-label={t.inspector.closeLabel}
           className="shrink-0 rounded-[var(--radius-sm)] p-1.5 text-[var(--text-tertiary)] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] transition"
         >
           <X className="h-4 w-4" />
@@ -68,7 +69,7 @@ export const ComponentInspector: React.FC<ComponentInspectorProps> = ({
         {activeTab === "about" && (
           <>
             <div>
-              <h4 className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">{t.inspector.role}</h4>
+              <h3 className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">{t.inspector.role}</h3>
               <p className="mt-1 leading-relaxed text-[var(--text-secondary)]">{node.description}</p>
             </div>
 
@@ -87,7 +88,7 @@ export const ComponentInspector: React.FC<ComponentInspectorProps> = ({
 
             {tech && tech.bestFor && (
               <div>
-                <h4 className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">{t.inspector.bestFor}</h4>
+                <h3 className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">{t.inspector.bestFor}</h3>
                 <div className="mt-1.5 flex flex-wrap gap-1.5">
                   {tech.bestFor.map((item, idx) => (
                     <span
@@ -128,14 +129,15 @@ export const ComponentInspector: React.FC<ComponentInspectorProps> = ({
                     const srcNode = model.nodes.find((n) => n.id === edge.source);
                     if (!srcNode) return null;
                     return (
-                      <div
+                      <button
                         key={edge.id}
+                        type="button"
                         onClick={() => onSelectNode(srcNode.id)}
-                        className="flex cursor-pointer items-center gap-2 rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--surface-2)] p-2.5 text-[11px] transition hover:border-accent-500"
+                        className="flex w-full items-center gap-2 rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--surface-2)] p-2.5 text-left text-[11px] transition hover:border-accent-500"
                       >
                         <span className="h-2 w-2 rounded-full" style={{ backgroundColor: srcNode.accentColor }} />
                         <span className="font-semibold text-[var(--text-primary)]">{srcNode.title}</span>
-                      </div>
+                      </button>
                     );
                   })}
                 </div>
@@ -155,14 +157,15 @@ export const ComponentInspector: React.FC<ComponentInspectorProps> = ({
                     const tgtNode = model.nodes.find((n) => n.id === edge.target);
                     if (!tgtNode) return null;
                     return (
-                      <div
+                      <button
                         key={edge.id}
+                        type="button"
                         onClick={() => onSelectNode(tgtNode.id)}
-                        className="flex cursor-pointer items-center gap-2 rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--surface-2)] p-2.5 text-[11px] transition hover:border-success-500"
+                        className="flex w-full items-center gap-2 rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--surface-2)] p-2.5 text-left text-[11px] transition hover:border-success-500"
                       >
                         <span className="h-2 w-2 rounded-full" style={{ backgroundColor: tgtNode.accentColor }} />
                         <span className="font-semibold text-[var(--text-primary)]">{tgtNode.title}</span>
-                      </div>
+                      </button>
                     );
                   })}
                 </div>
