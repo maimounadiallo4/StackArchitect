@@ -71,6 +71,15 @@ const en = {
     actorSingular: "actor",
     actorPlural: "actors",
     nodeSelected: "Selected: {title} — {subtitle}",
+    diagramView: "Diagram",
+    listView: "List",
+    legend: "Legend",
+    listViewColumns: {
+      component: "Component",
+      category: "Category",
+      deploymentZone: "Deployment tier",
+      connections: "Connections",
+    },
   },
 
   actorDescriptions: {
@@ -363,6 +372,15 @@ const fr: typeof en = {
     actorSingular: "acteur",
     actorPlural: "acteurs",
     nodeSelected: "Sélectionné : {title} — {subtitle}",
+    diagramView: "Diagramme",
+    listView: "Liste",
+    legend: "Légende",
+    listViewColumns: {
+      component: "Composant",
+      category: "Catégorie",
+      deploymentZone: "Niveau de déploiement",
+      connections: "Connexions",
+    },
   },
 
   actorDescriptions: {

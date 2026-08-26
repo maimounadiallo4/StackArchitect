@@ -149,13 +149,29 @@ export function generateC4StructurizrDSL(model: ArchitectureModel): string {
   return lines.join("\n");
 }
 
+/**
+ * Deterministic, dependency-free short signature identifying a specific
+ * combination of selected technologies — lets two exported ADRs be diffed
+ * or recognized as "the same stack" without a backend/versioning system.
+ */
+export function computeStackSignature(model: ArchitectureModel): string {
+  const key = [...model.selectedTechs.map((t) => t.id)].sort().join(",");
+  let hash = 5381;
+  for (let i = 0; i < key.length; i++) {
+    hash = (hash * 33) ^ key.charCodeAt(i);
+  }
+  return (hash >>> 0).toString(36);
+}
+
 // 3. Generate Architecture Decision Record (Markdown RFC)
 export function generateArchitectureDocument(model: ArchitectureModel, issues: ValidationIssue[] = []): string {
   const dateStr = new Date().toISOString().split("T")[0];
   const doc: string[] = [];
 
   doc.push(`# Technical Architecture Design: ${model.project.name || "System Design"}`);
-  doc.push(`**Date:** ${dateStr} | **Status:** Approved Draft | **Complexity:** ${model.stats.estimatedComplexity}`);
+  doc.push(
+    `**Date:** ${dateStr} | **Status:** Approved Draft | **Complexity:** ${model.stats.estimatedComplexity} | **Stack Signature:** \`${computeStackSignature(model)}\``
+  );
   doc.push("");
   doc.push("## 1. Executive Summary & Project Context");
   doc.push(`- **Application Type:** ${model.project.type.toUpperCase()}`);

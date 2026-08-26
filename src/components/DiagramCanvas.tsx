@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
-import { ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
+import { ZoomIn, ZoomOut, Maximize2, LayoutGrid, List, Info } from "lucide-react";
 import { ArchitectureModel } from "../types";
 import { IconTile } from "./ui/IconTile";
 import { TECH_BY_ID } from "../engine/catalog";
 import { useLanguage } from "../i18n/LanguageContext";
 import { formatTemplate } from "../i18n/translations";
+import { DiagramLegend } from "./DiagramLegend";
+import { DiagramListView } from "./DiagramListView";
 import { cn } from "../lib/cn";
 
 interface DiagramCanvasProps {
@@ -44,6 +46,9 @@ export const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ model, selectedNod
   const actorCount = useMemo(() => model.nodes.filter((n) => n.category === "actor").length, [model.nodes]);
   const technicalCount = model.nodes.length - actorCount;
   const selectedNode = selectedNodeId ? nodeMap.get(selectedNodeId) : null;
+
+  const [viewMode, setViewMode] = useState<"diagram" | "list">("diagram");
+  const [showLegend, setShowLegend] = useState(false);
 
   const startPan = useCallback((clientX: number, clientY: number) => {
     setIsPanning(true);
@@ -175,6 +180,60 @@ export const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ model, selectedNod
     );
   }
 
+  const viewToggle = (
+    <div className="absolute left-3 top-3 z-20 flex items-center gap-1 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-1)]/95 p-1 shadow-[var(--elevation-3)] backdrop-blur-md sm:left-4 sm:top-4">
+      <button
+        onClick={() => setViewMode("diagram")}
+        aria-pressed={viewMode === "diagram"}
+        title={t.diagram.diagramView}
+        aria-label={t.diagram.diagramView}
+        className={cn(
+          "rounded-[var(--radius-sm)] p-1.5 transition",
+          viewMode === "diagram" ? "bg-accent-500 text-[var(--text-on-accent)]" : "text-[var(--text-tertiary)] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)]"
+        )}
+      >
+        <LayoutGrid className="h-4 w-4" />
+      </button>
+      <button
+        onClick={() => setViewMode("list")}
+        aria-pressed={viewMode === "list"}
+        title={t.diagram.listView}
+        aria-label={t.diagram.listView}
+        className={cn(
+          "rounded-[var(--radius-sm)] p-1.5 transition",
+          viewMode === "list" ? "bg-accent-500 text-[var(--text-on-accent)]" : "text-[var(--text-tertiary)] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)]"
+        )}
+      >
+        <List className="h-4 w-4" />
+      </button>
+      {viewMode === "diagram" && (
+        <button
+          onClick={() => setShowLegend((v) => !v)}
+          aria-pressed={showLegend}
+          title={t.diagram.legend}
+          aria-label={t.diagram.legend}
+          className={cn(
+            "rounded-[var(--radius-sm)] p-1.5 transition",
+            showLegend ? "bg-accent-500 text-[var(--text-on-accent)]" : "text-[var(--text-tertiary)] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)]"
+          )}
+        >
+          <Info className="h-4 w-4" />
+        </button>
+      )}
+    </div>
+  );
+
+  if (viewMode === "list") {
+    return (
+      <div className="relative flex flex-1 flex-col overflow-hidden">
+        {viewToggle}
+        <div className="flex-1 overflow-hidden pt-14">
+          <DiagramListView model={model} selectedNodeId={selectedNodeId} onSelectNode={onSelectNode} t={t} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       ref={containerRef}
@@ -187,6 +246,8 @@ export const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ model, selectedNod
       onMouseLeave={handleMouseUp}
       onWheel={handleWheel}
     >
+      {viewToggle}
+      {showLegend && <DiagramLegend zones={model.zones} lanes={t.lanes} />}
       {/* Floating zoom controls */}
       <div className="absolute right-3 top-3 z-20 flex items-center gap-1 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-1)]/95 p-1 shadow-[var(--elevation-3)] backdrop-blur-md sm:right-4 sm:top-4">
         <button
